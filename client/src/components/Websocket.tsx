@@ -102,7 +102,7 @@ export const Websocket = () => {
             <div>
               {messages.map((msg) => (
                 <div>
-                  <p>{msg.content[1]} : {msg.content[0]}</p>
+                  <p>{msg.socketid} : {msg.content}</p>
                 </div>
               ))}
             </div>
