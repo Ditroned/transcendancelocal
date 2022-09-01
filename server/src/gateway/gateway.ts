@@ -6,12 +6,9 @@ import {
   WebSocketServer,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { Socket } from 'dgram';
 import { SocketAddress } from 'net';
 import { identity } from 'rxjs';
-import { Server } from 'socket.io';
-
-
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
@@ -24,37 +21,50 @@ export class MyGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 
-
   onModuleInit() {
     this.server.on('connection', (socket) => {
+      socket.join('1');
       console.log(socket.id);
       console.log('Connected');
       this.listUser.push(socket.id);
       this.server.emit('connected',{
         listUser : this.listUser
       });
-      //console.log(this.users);
-      //const uid = this.server.GetUidFromSocketID(socket.id);
-      //private users = socket.id;
-      //console.log(users);
     });
   }
 
-
   @SubscribeMessage('newMessage')
-  onNewMessage(@MessageBody() body: any,
-  @ConnectedSocket() client: Socket,
+  onNewMessage(@ConnectedSocket() client: Socket,
+  @MessageBody() body: any,
   ) {
+    client.leave('1');
+    client.join(body[2]);
     console.log(body);
-    //client: WebSocket;
-    //console.log(WebSocket.OPEN);
     //console.log(this.socket.GetUidFromSocketID);
-    this.server.emit('onMessage', {
+    this.server.to(body[2]).emit('onMessage', {
       msg: 'New Message',
       content: body[0],
       socketid: body[1]
-      //balon: 'this.users'
-      //yourid: this.server.sockets,
     });
   }
+
+  /*
+  @SubscribeMessage('disconnection')
+  onNewMessage(@ConnectedSocket() client: Socket,
+  @MessageBody() body: any,
+  ) {
+    const result = listUser.filer(user => user !== client.socketid);
+    listUser = result;
+    this.server.emit('connected',{
+        listUser : this.listUser
+      });
+    });
+  }
+  */
 }
+
+/*
+update list array
+bouton mute pm 
+current room et list room
+*/

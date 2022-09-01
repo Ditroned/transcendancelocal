@@ -19,43 +19,47 @@ type UserPayload = {
   socket : any;
 };
 
-
 export const Websocket = () => {
-
-  //const [room, setRoom] = useState("");
   const [value, setValue] = useState('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
-  
-  //const [usersss, setUsersss] = useState([]);
   const [room, setRoom] = useState('1');
   const socket = useContext(WebsocketContext);
-  //let locallist;
-
 
   useEffect(() => {
-    
-    //check ok connected
     socket.on('connection', (room: string) => {
       console.log('Connected!');
     });
-
-    //update list user
     socket.on('connected', (newUser: UserPayload) => {
       setUsers((prev) => [...prev, newUser]);
     });
-
-    //update affichage message chat
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
-      //to do: si le socket est mute on ne fait rien
-      //console.log(newMessage);
       setMessages((prev) => [...prev, newMessage]);
     });
 
     
     return () => {
+      //const words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
+
+//const words = users.[users.length - 1].listUser;
+//const result = words.filter(word => word.length > 6);
+//const resu = results.filter(result.length > 6)
+
+    //console.log(users[users.length - 1]);
+    //users[users.length - 1].listUser.map((user) => (console.log(user)));
+      //users.forEach(element => console.log(element));
+      //let result = users[users.length - 1].listUser;
+      //socket.emit('disconnected', result);
+
+      //socket.on('disconnected', (newUser: UserPayload) => {
+      //  users.find(newUser.socketid)
+
+        //console.log('i am disconected');
+    
       console.log('Unregistering Events...');
+      users.length === 0 ? (console.log('oui')) : (console.log('non'));
+      //console.log(users[0].listUser);
       //listUsers -= currentsocket
       /*
       function newlistuser(arr_values:string[]) {
@@ -72,8 +76,10 @@ export const Websocket = () => {
       */
       //users[users.length - 1].listUser;
       //emmit new list user
+      socket.emit('disconection', socket.id);
       socket.off('connect');
       socket.off('onMessage');
+      socket.off('connection');
     };
   }, [socket]);
 
@@ -86,15 +92,15 @@ export const Websocket = () => {
     if (room !== "") {
       console.log('jai bien join room');
       console.log(room);
-      //setRoom(room);
-      socket.emit("join_room", socket.id, room);
+      socket.emit("join_room", socket.id, room, setRoom(room));
+      console.log(room);
     }
   };
 
   return (
     <div>
       <div>
-        <h1>This is my beautiful chat , your id is {socket.id} </h1>
+        <h6>This is my beautiful chat , your id is {socket.id} </h6>
         <div>
           {messages.length === 0 ? (
             <div>No Messages</div>
@@ -102,14 +108,14 @@ export const Websocket = () => {
             <div>
               {messages.map((msg) => (
                 <div>
-                  <p>{msg.socketid} : {msg.content}</p>
+                  {msg.socketid} : {msg.content}
                 </div>
               ))}
             </div>
           )}
         </div>
         <div>
-        <h2 style={{textAlign: "center"}}>list utilisateur</h2>
+        <h5 style={{textAlign: "center"}}>list utilisateur</h5>
         <p style={{textAlign: "center"}}>
         
                 {users[0] == null ? (
@@ -119,7 +125,7 @@ export const Websocket = () => {
                 <div>
                   {users[users.length - 1].listUser.map((user) => (
                     <div>
-                  <p>{user}</p>
+                  {user}
                     </div>            
                   ))}   
                 </div>
@@ -141,10 +147,7 @@ export const Websocket = () => {
       <input
         placeholder="Room Number..."
         onChange={(event) => {
-          //setRoom(event.target.value);
-          //socket.io.socket.join("room");
-          //setRoom(event.target.value);
-          //console.log(event.target.value);
+          setRoom(event.target.value);
         }}
       />
       <button onClick={joinRoom}> Join Room</button>
