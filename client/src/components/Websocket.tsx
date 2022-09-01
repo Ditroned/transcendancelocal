@@ -24,6 +24,7 @@ export const Websocket = () => {
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
   const [room, setRoom] = useState('1');
+  const [oldroom, setOldroom] = useState('1');
   const socket = useContext(WebsocketContext);
 
   useEffect(() => {
@@ -37,56 +38,9 @@ export const Websocket = () => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
     });
-    /*
-    socket.on('disconnect', () => {
-      users.forEach(element => console.log(element));
-      let result = users[users.length - 1].listUser;
-      socket.emit('disconnect', result);
-      console.log('disco du client');
-    });
-    */
 
-    
     return () => {
-      //const words = ['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'];
-
-//const words = users.[users.length - 1].listUser;
-//const result = words.filter(word => word.length > 6);
-//const resu = results.filter(result.length > 6)
-
-    //console.log(users[users.length - 1]);
-    //users[users.length - 1].listUser.map((user) => (console.log(user)));
-      //users.forEach(element => console.log(element));
-      //let result = users[users.length - 1].listUser;
-      //socket.emit('disconnected', result);
-
-      //socket.on('disconnected', (newUser: UserPayload) => {
-      //  users.find(newUser.socketid)
-
-        //console.log('i am disconected');
-    
       console.log('Unregistering Events...');
-      //users.length === 0 ? (console.log('oui')) : (console.log('non'));
-      //console.log(users[0].listUser);
-      //listUsers -= currentsocket
-      /*
-      function newlistuser(arr_values:string[]) {
-        locallist = [];
-        for(let i = 0;i<arr_values.length;i++) {
-          if (arr_values[i] !== socket.id)
-          {
-            locallist.push(arr_values[i]);
-          }
-
-        }
-      }
-      newlistuser(users[users.length - 1].listUser);
-      */
-      //users[users.length - 1].listUser;
-      //emmit new list user
-      //socket.emit('disconection', socket.id);
-      //console.log('je me disconnect');
-      //console.log(users);
       socket.off('connect');
       socket.off('onMessage');
       socket.off('connection');
@@ -94,15 +48,16 @@ export const Websocket = () => {
   }, [socket]);
 
   const onSubmit = () => {
-    socket.emit('newMessage', value, socket.id, room);//le body du message envoyer au serv
-    setValue('');//reset de value
+    socket.emit('newMessage', value, socket.id, oldroom, room);
+    setValue('');
   }
 
   const joinRoom = () => {
     if (room !== "") {
       console.log('jai bien join room');
-      console.log(room);
-      socket.emit("join_room", socket.id, room, setRoom(room));
+      console.log(oldroom);
+      //let oldroom = room;
+      socket.emit("newMessage",value, socket.id, oldroom, room);
       console.log(room);
     }
   };
@@ -156,9 +111,13 @@ export const Websocket = () => {
       <div className="App">
       <input
         placeholder="Room Number..."
+        value={room}
         onChange={(event) => {
-          setRoom(event.target.value);
-        }}
+          setOldroom(room);
+          setRoom(event.target.value)}
+        }
+          
+        
       />
       <button onClick={joinRoom}> Join Room</button>
         </div>

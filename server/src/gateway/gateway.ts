@@ -26,23 +26,20 @@ export class MyGateway implements OnModuleInit {
       socket.join('1');
       console.log(socket.id);
       console.log('Connected');
+      
       this.listUser.push(socket.id);
       this.server.emit('connected',{
         listUser : this.listUser
       });
+      
       socket.on("disconnect", () => {
-        let result : string[] = [];
-        result = this.listUser;
-        result = this.listUser.filter(user => user !== socket.id);
+        let result : string[] = this.listUser.filter(user => user !== socket.id);
         this.listUser = result;
         this.server.emit('connected',{
           listUser : this.listUser
         });
-
+     
       });
-      //console.log(this.listUser);
-      //const result = this.listUser.filter(user => user !== socket.id);
-      //console.log(result);
     });
   }
 
@@ -50,11 +47,11 @@ export class MyGateway implements OnModuleInit {
   onNewMessage(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
-    client.leave('1');
-    client.join(body[2]);
+    client.leave(body[2]);
+    client.join(body[3]);
     //console.log(body);
     //console.log(this.socket.GetUidFromSocketID);
-    this.server.to(body[2]).emit('onMessage', {
+    this.server.to(body[3]).emit('onMessage', {
       msg: 'New Message',
       content: body[0],
       socketid: body[1]
