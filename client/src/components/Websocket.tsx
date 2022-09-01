@@ -37,6 +37,14 @@ export const Websocket = () => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
     });
+    /*
+    socket.on('disconnect', () => {
+      users.forEach(element => console.log(element));
+      let result = users[users.length - 1].listUser;
+      socket.emit('disconnect', result);
+      console.log('disco du client');
+    });
+    */
 
     
     return () => {
@@ -58,7 +66,7 @@ export const Websocket = () => {
         //console.log('i am disconected');
     
       console.log('Unregistering Events...');
-      users.length === 0 ? (console.log('oui')) : (console.log('non'));
+      //users.length === 0 ? (console.log('oui')) : (console.log('non'));
       //console.log(users[0].listUser);
       //listUsers -= currentsocket
       /*
@@ -76,7 +84,9 @@ export const Websocket = () => {
       */
       //users[users.length - 1].listUser;
       //emmit new list user
-      socket.emit('disconection', socket.id);
+      //socket.emit('disconection', socket.id);
+      //console.log('je me disconnect');
+      //console.log(users);
       socket.off('connect');
       socket.off('onMessage');
       socket.off('connection');

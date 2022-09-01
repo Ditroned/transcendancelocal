@@ -30,6 +30,19 @@ export class MyGateway implements OnModuleInit {
       this.server.emit('connected',{
         listUser : this.listUser
       });
+      socket.on("disconnect", () => {
+        let result : string[] = [];
+        result = this.listUser;
+        result = this.listUser.filter(user => user !== socket.id);
+        this.listUser = result;
+        this.server.emit('connected',{
+          listUser : this.listUser
+        });
+
+      });
+      //console.log(this.listUser);
+      //const result = this.listUser.filter(user => user !== socket.id);
+      //console.log(result);
     });
   }
 
@@ -39,7 +52,7 @@ export class MyGateway implements OnModuleInit {
   ) {
     client.leave('1');
     client.join(body[2]);
-    console.log(body);
+    //console.log(body);
     //console.log(this.socket.GetUidFromSocketID);
     this.server.to(body[2]).emit('onMessage', {
       msg: 'New Message',
@@ -48,11 +61,26 @@ export class MyGateway implements OnModuleInit {
     });
   }
 
-  /*
-  @SubscribeMessage('disconnection')
-  onNewMessage(@ConnectedSocket() client: Socket,
+  
+  @SubscribeMessage('disconnect')
+  onNewDisconnection(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
+    console.log('jesuisjmsdeconnect par cette bouclie');
+    /*
+    let result : string[] = [];
+    result = this.listUser;
+    result = this.listUser.filter(user => user !== body[0]);
+    this.listUser = result;
+    //this.listUser.length > 1 ? (result = this.listUser.filter(user => user !== body[0]) ) : (result = []);
+    this.server.emit('connected',{
+      listUser : this.listUser
+    });
+    console.log(this.listUser);
+    //console.log(this.listUser);
+    */
+  }
+    /*
     const result = listUser.filer(user => user !== client.socketid);
     listUser = result;
     this.server.emit('connected',{
