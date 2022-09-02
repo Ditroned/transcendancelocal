@@ -57,7 +57,7 @@ export const Websocket = () => {
       console.log('jai bien join room');
       console.log(oldroom);
       //let oldroom = room;
-      socket.emit("newMessage",value, socket.id, oldroom, room);
+      socket.emit("joinRoom",value, socket.id, oldroom, room);
       console.log(room);
     }
   };
@@ -125,3 +125,15 @@ export const Websocket = () => {
     
   );
 };
+/*
+const socket = io('http://localhost:3000/test');
+
+socket.on('connect', () => {
+    console.log('Connected', socket.id);
+    socket.emit('joinRoom', { room: 'room0', username: 'name1', password: 'pass@1234' });
+})
+
+socket.on('passwordFeedback', (data) => {
+    console.log(data);
+})
+*/
