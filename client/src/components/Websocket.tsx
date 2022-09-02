@@ -1,6 +1,7 @@
 //import { Socket } from 'net';
 import { IOType } from 'child_process';
 import { useContext, useEffect, useState } from 'react';
+import { REPL_MODE_SLOPPY } from 'repl';
 import { io } from 'socket.io-client';
 import { TypePredicateKind } from 'typescript';
 import { WebsocketContext } from '../contexts/WebsocketContext';
@@ -19,13 +20,23 @@ type UserPayload = {
   socket : any;
 };
 
+type RoomPayload = {
+  room: Map<string,number>;
+};
+
+
 export const Websocket = () => {
   const [value, setValue] = useState('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
+  const [RoomList, setRoomList] = useState<RoomPayload[]>([]);
   const [room, setRoom] = useState('1');
   const [oldroom, setOldroom] = useState('1');
   const socket = useContext(WebsocketContext);
+
+  let listderoom = new Map([['room',0]]);
+
+
 
   useEffect(() => {
     socket.on('connection', (room: string) => {
@@ -37,6 +48,12 @@ export const Websocket = () => {
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
+    });
+    socket.on('roomMove', (newRoomMoove: RoomPayload) => {
+      //newRoomMoove.room
+      listderoom = newRoomMoove.room;
+      console.log('room change');
+      //setRoomList((prev) => [newRoomMoove]);
     });
 
     return () => {
@@ -93,6 +110,23 @@ export const Websocket = () => {
                   {user}
                     </div>            
                   ))}   
+                </div>
+                )}
+        </p>
+                
+        
+      </div>
+      <div>
+        <h5 style={{textAlign: "center"}}>list utilisateur</h5>
+        <p style={{textAlign: "center"}}>
+        
+                {listderoom == null ? (
+                  <div></div>
+                ) : (
+            
+                <div>
+                  {listderoom}
+                  
                 </div>
                 )}
         </p>

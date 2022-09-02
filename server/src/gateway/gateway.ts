@@ -22,17 +22,61 @@ import { Server, Socket} from 'socket.io';
 export class MyGateway implements OnModuleInit {
   public listUser : string[] = [];
   public listRoom : string[] = [];
+  public listderoom = new Map();
+  
+  //listderoom.set(0, "0");
+
+
+
 
   @WebSocketServer()
   server: Server;
   
   //adapter = new Adapter({ server: { encoder: null } });
+/*
+  logMapElements(value, key, map) {
+    (key === value) ? mamap.set(key,value) : (console.log('non'));
+    
+    console.log(`m[${key}] = ${value}`);
+  }
+  */
 
 
   onModuleInit() {
+    this.listderoom.set("1", 0);
     this.server.on('connection', (socket) => {
       
       socket.join('1');
+      let mamap = new Map();
+
+      function logSetElements(value1, value2, set) {
+        console.log(`s[${value1}] = ${value2}`);
+      }
+
+      function logMapElements(value, key, map) {
+
+        (key === value.values().next().value) ?
+        key : (mamap.set(key,value))
+        //(console.log(value.values().next().value)) : (mamap.set(key,value))
+        //(value.forEach(logSetElements)) : (console.log('cunuser'))
+      }
+
+      
+      this.server.sockets.adapter.rooms.forEach(logMapElements);
+      console.log(mamap);
+      /*
+
+
+      for (const item of this.server.sockets.adapter.rooms)
+      {item[0] === item[1] ? ()};
+      mamap.set(key,value)
+      */
+      /*
+      this.server.sockets.adapter.rooms.forEach(
+      {(key === value) ?
+        (console.log('ptet')) : (console.log('non'))});
+      console.log(this.server.sockets.adapter.rooms);
+      */
       //this.server.ro
       //this.server.adapter.rooms
       console.log(socket.id);
@@ -73,7 +117,14 @@ export class MyGateway implements OnModuleInit {
   ) {
     
     client.leave(body[2]);
+    this.listderoom[body[2]] -= 1;
     client.join(body[3]);
+    this.listderoom[body[3]] += 1;
+    this.server.emit('roomMove',{
+      listroom : this.listderoom
+    });
+    console.log(this.listderoom);
+
     //console.log(this.server.sockets.adapter.rooms.size);
   }
 
