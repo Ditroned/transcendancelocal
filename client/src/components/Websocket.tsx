@@ -3,6 +3,7 @@ import { IOType } from 'child_process';
 import { useContext, useEffect, useState } from 'react';
 import { REPL_MODE_SLOPPY } from 'repl';
 import { io } from 'socket.io-client';
+import { Tracing } from 'trace_events';
 import { TypePredicateKind } from 'typescript';
 import { WebsocketContext } from '../contexts/WebsocketContext';
 
@@ -21,7 +22,7 @@ type UserPayload = {
 };
 
 type RoomPayload = {
-  room: Map<string,number>;
+  room: Map<string,Set<string>>;
 };
 
 
@@ -34,7 +35,7 @@ export const Websocket = () => {
   const [oldroom, setOldroom] = useState('1');
   const socket = useContext(WebsocketContext);
 
-  let listderoom = new Map([['room',0]]);
+  let listderoom = new Map<string,Set<string>>;
 
 
 
@@ -49,12 +50,22 @@ export const Websocket = () => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
     });
-    socket.on('roomMove', (newRoomMoove: RoomPayload) => {
+    
+    /*
+    socket.on('roomMove', (body: any)  => {
       //newRoomMoove.room
-      listderoom = newRoomMoove.room;
-      console.log('room change');
+      //listderoom = newRoomMoove.room;
+      //listderoom.forEach(element => {console.log(element)
+      //console.log('alors le body 0 ' + body[0]);
+      console.log('lebody0');
+      });
+      */
+      
+
+      //console.log(newRoomMoove);
       //setRoomList((prev) => [newRoomMoove]);
-    });
+
+    
 
     return () => {
       console.log('Unregistering Events...');
@@ -72,10 +83,10 @@ export const Websocket = () => {
   const joinRoom = () => {
     if (room !== "") {
       console.log('jai bien join room');
-      console.log(oldroom);
+      //console.log(oldroom);
       //let oldroom = room;
       socket.emit("joinRoom",value, socket.id, oldroom, room);
-      console.log(room);
+      //console.log(room);
     }
   };
 

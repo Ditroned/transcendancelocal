@@ -47,6 +47,7 @@ export class MyGateway implements OnModuleInit {
     this.server.on('connection', (socket) => {
       
       socket.join('1');
+      /*
       let mamap = new Map();
 
       function logSetElements(value1, value2, set) {
@@ -64,6 +65,8 @@ export class MyGateway implements OnModuleInit {
       
       this.server.sockets.adapter.rooms.forEach(logMapElements);
       console.log(mamap);
+      */
+     
       /*
 
 
@@ -120,10 +123,19 @@ export class MyGateway implements OnModuleInit {
     this.listderoom[body[2]] -= 1;
     client.join(body[3]);
     this.listderoom[body[3]] += 1;
+    let mamap = new Map();
+    function logMapElements(value, key, map) {
+
+      (key === value.values().next().value) ?
+      key : (mamap.set(key,value))
+      //(console.log(value.values().next().value)) : (mamap.set(key,value))
+      //(value.forEach(logSetElements)) : (console.log('cunuser'))
+    }
+    this.server.sockets.adapter.rooms.forEach(logMapElements);
     this.server.emit('roomMove',{
-      listroom : this.listderoom
+      listroom : mamap
     });
-    console.log(this.listderoom);
+    //console.log(mamap);
 
     //console.log(this.server.sockets.adapter.rooms.size);
   }
