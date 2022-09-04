@@ -34,8 +34,10 @@ export const Websocket = () => {
   const [room, setRoom] = useState('1');
   const [oldroom, setOldroom] = useState('1');
   const socket = useContext(WebsocketContext);
+  const [count, setCount] = useState(0);
 
-  let listderoom = new Map<string,Set<string>>;
+  //let listderoom = new Map<string,Set<string>>;
+  const listderoom = useState(new Map<string,Set<string>>);
 
 
 
@@ -49,17 +51,18 @@ export const Websocket = () => {
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
+
     });
     
-    /*
+    
     socket.on('roomMove', (body: any)  => {
       //newRoomMoove.room
       //listderoom = newRoomMoove.room;
       //listderoom.forEach(element => {console.log(element)
       //console.log('alors le body 0 ' + body[0]);
-      console.log('lebody0');
+      console.log(body);
       });
-      */
+      
       
 
       //console.log(newRoomMoove);
@@ -77,6 +80,8 @@ export const Websocket = () => {
 
   const onSubmit = () => {
     socket.emit('newMessage', value, socket.id, oldroom, room);
+    setCount(count + 1);
+    console.log(count);
     setValue('');
   }
 

@@ -22,9 +22,32 @@ import { Server, Socket} from 'socket.io';
 export class MyGateway implements OnModuleInit {
   public listUser : string[] = [];
   public listRoom : string[] = [];
-  public listderoom = new Map();
+  public listderoom = new Map<string,Set<string>>;
+
+  /*
   
   //listderoom.set(0, "0");
+  //join
+  listderoom.has('joinroomname') ? 
+    ((listderoom.get('joinroomname').has(socket.id)) ?  () : listderoom.get('joinroomname').add(socket.id))
+    :
+    (listderoom.set('joinroomname').add(socket.id))
+
+  //leave
+  listderoom.has('leaveroomname') ?
+    (listderoom.get('leaveroomname').has(socket.id)) ?
+      (listderoom.get('leaveroomname').size() == 1) ?  listderoom.delete('leveroomname') : listderoom.get('leaveroomname').delete(socket.id)
+      :
+      console.log('bug leave mais pas de socket id present')
+  :
+  console.log('bug na pas le leaveroom')
+  */
+
+  
+
+
+
+
 
 
 
@@ -43,7 +66,7 @@ export class MyGateway implements OnModuleInit {
 
 
   onModuleInit() {
-    this.listderoom.set("1", 0);
+    //this.listderoom.set("1", 0);
     this.server.on('connection', (socket) => {
       
       socket.join('1');
@@ -132,12 +155,24 @@ export class MyGateway implements OnModuleInit {
       //(value.forEach(logSetElements)) : (console.log('cunuser'))
     }
     this.server.sockets.adapter.rooms.forEach(logMapElements);
+    //console.log(mamap);
+    let binbon = new Array<string>;
+
+    function fillerRoom(value, key, map) {
+
+      binbon.push(key);
+      //(console.log(value.values().next().value)) : (mamap.set(key,value))
+      //(value.forEach(logSetElements)) : (console.log('cunuser'))
+    }
+
+    mamap.forEach(fillerRoom);
+    binbon.push()
     this.server.emit('roomMove',{
-      listroom : mamap
+      listroom : binbon
     });
     //console.log(mamap);
 
-    //console.log(this.server.sockets.adapter.rooms.size);
+    console.log(this.server.sockets.adapter.rooms.size);
   }
 
   
