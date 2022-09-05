@@ -11,7 +11,8 @@ import { identity } from 'rxjs';
 import { Server, Socket} from 'socket.io';
 //const { Adapter } = require("..");
 
-
+//public listderoom = new Map<string,Set<string>>;
+//const mapaaa = new Map([['1', {'john' : 2}]]);
 
 
 @WebSocketGateway({
@@ -19,20 +20,67 @@ import { Server, Socket} from 'socket.io';
     origin: ['http://localhost:3000'],
   },
 })
+
+/*
+type RoomType = {
+  [id : string] : string;
+};
+*/
+
+//const moupa: RoomType = {};
+/*
+const mapoli = new Map<string, string>();
+
+function mapsetter(a,b){
+  mapoli.set(a,b);
+}
+*/
+//mapoli.set('a','b');
+
 export class MyGateway implements OnModuleInit {
   public listUser : string[] = [];
   public listRoom : string[] = [];
-  public listderoom = new Map<string,Set<string>>;
-
-  /*
+  public listderoom = new Map<string,string>();
   
-  //listderoom.set(0, "0");
+ 
+
+  //const moupa: RoomType = {};
+  //const moupa: Record<string, string> = {};
+  //moupa['b'] = 'x';
+  //mapoli = new Map<string, string>();
+  //this.mapoli.set('a', 'c') : Map<string,string>;
+
+
+  //public listderoom = new Map<any,any>;
+  //public listderoom = new Map([ [ '0', {}]]);
+  //const [bilu, setBilu] = useState(0);
+  //const map = new Map<string, string>();
+  //map.set('a', 'b');
+  //map.set('c', 'd');
+
+  //mapaaa.set('a', {'john' : 2});
+  //public mapaaa;
+  //mapaaa = new Map([['1', {'john' : 2}]]); 
+  //listderoom.set('a', 'b') : Map<string,string>();
+  //this.mapaaa.set('a', {'john' : 2}) = mapaaa;
+  //boulaa = this.mapaaa.set('a', {'john' : 2});
+
+  
+  //public john = {name: 'John Doe'};
+  //listderoom.set('a', {'b'});
+  
+  
   //join
+  /*
+  listderoom
+
+
   listderoom.has('joinroomname') ? 
-    ((listderoom.get('joinroomname').has(socket.id)) ?  () : listderoom.get('joinroomname').add(socket.id))
+    ((listderoom.get('joinroomname').has(socket.id)) ?  null : listderoom.get('joinroomname').add(socket.id))
     :
     (listderoom.set('joinroomname').add(socket.id))
 
+    /*
   //leave
   listderoom.has('leaveroomname') ?
     (listderoom.get('leaveroomname').has(socket.id)) ?
@@ -66,10 +114,23 @@ export class MyGateway implements OnModuleInit {
 
 
   onModuleInit() {
+    let listderoom = new Map();
+    listderoom.set('joinroomname', new Set<string>);
+    
+
+    
+
     //this.listderoom.set("1", 0);
     this.server.on('connection', (socket) => {
       
-      socket.join('1');
+    socket.join('joinroomname');
+    listderoom.has('joinroomname') ? 
+      ((listderoom.get('joinroomname').has(socket.id)) ?  null : listderoom.get('joinroomname').add(socket.id))
+      :
+      (listderoom.set('joinroomname', socket.id))
+
+      console.log(listderoom);
+      //console.log(typeof(this.server.sockets.adapter.rooms));
       /*
       let mamap = new Map();
 
@@ -117,6 +178,14 @@ export class MyGateway implements OnModuleInit {
       socket.on("disconnect", () => {
         let result : string[] = this.listUser.filter(user => user !== socket.id);
         this.listUser = result;
+        listderoom.has('joinroomname') ?
+          (listderoom.get('joinroomname').has(socket.id)) ?
+              (listderoom.get('joinroomname').size == 1) ?  
+                  listderoom.delete('joinroomname') : listderoom.get('joinroomname').delete(socket.id)
+                :
+            console.log('bug leave mais pas de socket id present')
+  :
+  console.log('bug na pas le leaveroom')
         this.server.emit('connected',{
           listUser : this.listUser
         });
