@@ -84,6 +84,10 @@ export class MyGateway implements OnModuleInit {
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
+      this.server.sockets.socketsJoin('abc');
+      console.log(userinfo.oldroom);
+      socket.join(userinfo.room);
+      socket.leave(userinfo.oldroom);
         
        //console.log(maproom);
        this.server.emit('roomMove',{
