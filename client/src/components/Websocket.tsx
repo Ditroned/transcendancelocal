@@ -31,6 +31,7 @@ export const Websocket = () => {
   const [oldroom, setOldroom] = useState('joinroomname');
   const socket = useContext(WebsocketContext);
   const [count, setCount] = useState(0);
+  const [inputpassword, setInputpassword] = useState('');
 
   //let listderoom = new Map<string,Set<string>>;
   const listderoom = useState(new Map<string,Set<string>>);
@@ -86,21 +87,24 @@ export const Websocket = () => {
   }
 
   const joinRoom = () => {
+    /*
+    si room existe pas -> creer avec le pass donne (+ droit admin user)
+    si room existe -> check password -> incorrect console log 
+                                      -> correct join
+    */
     if (room !== "") {
-      //console.log('jai bien join room');
-      //console.log(oldroom);
-      //let oldroom = room;
-      //socket.emit("joinRoom",value, socket.id, oldroom, room);
       let mamamia = socket.id;
       let delvalue = value;
+      console.log(inputpassword);
       
       socket.emit("joinRoom", {
         delvalue,
         mamamia,
         oldroom,
-        room
+        room,
+        inputpassword
       })
-      //console.log(room);
+
     }
   };
 
@@ -166,6 +170,7 @@ export const Websocket = () => {
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
+          
           <button onClick={onSubmit}>Submit</button>
         </div>
       </div>
@@ -180,6 +185,12 @@ export const Websocket = () => {
           
         
       />
+      <input
+            placeholder="Password"
+            type="text"
+            value={inputpassword}
+            onChange={(e) => setInputpassword(e.target.value)}
+          />
       <button onClick={joinRoom}> Join Room</button>
         </div>
     </div>
