@@ -40,6 +40,7 @@ export const Websocket = () => {
   useEffect(() => {
     socket.on('connection', (room: string) => {
       console.log('Connected!');
+      
     });
     socket.on('connected', (newUser: UserPayload) => {
       //console.log(newUser.roomlist);
@@ -48,12 +49,12 @@ export const Websocket = () => {
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
       setMessages((prev) => [...prev, newMessage]);
-
     });
     
     
-    socket.on('roomMove', (body: any)  => {
-      console.log(body);
+    socket.on('roomMove', (newUser: UserPayload)  => {
+      //console.log(newUser);
+      setUsers((prev) => [...prev, newUser]);
       //newRoomMoove.room
       //listderoom = newRoomMoove.room;
       //listderoom.forEach(element => {console.log(element)
@@ -78,14 +79,15 @@ export const Websocket = () => {
 
   const onSubmit = () => {
     socket.emit('newMessage', value, socket.id, oldroom, room);
+
     setCount(count + 1);
-    console.log(value);
+    console.log(room);
     setValue('');
   }
 
   const joinRoom = () => {
     if (room !== "") {
-      console.log('jai bien join room');
+      //console.log('jai bien join room');
       //console.log(oldroom);
       //let oldroom = room;
       //socket.emit("joinRoom",value, socket.id, oldroom, room);
