@@ -18,21 +18,17 @@ type UserPayload = {
   socketid: string;
   nickname: string;
   listUser : string[];
+  roomlist: string[];
   socket : any;
 };
-
-type RoomPayload = {
-  room: Map<string,Set<string>>;
-};
-
 
 export const Websocket = () => {
   const [value, setValue] = useState('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
-  const [RoomList, setRoomList] = useState<RoomPayload[]>([]);
-  const [room, setRoom] = useState('1');
-  const [oldroom, setOldroom] = useState('1');
+  //const [RoomList, setRoomList] = useState<RoomPayload[]>([]);
+  const [room, setRoom] = useState('joinroomname');
+  const [oldroom, setOldroom] = useState('joinroomname');
   const socket = useContext(WebsocketContext);
   const [count, setCount] = useState(0);
 
@@ -46,7 +42,8 @@ export const Websocket = () => {
       console.log('Connected!');
     });
     socket.on('connected', (newUser: UserPayload) => {
-      setUsers((prev) => [...prev, newUser]);
+      //console.log(newUser.roomlist);
+      setUsers((prev) => [...prev, newUser]);        
     });
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
@@ -56,11 +53,12 @@ export const Websocket = () => {
     
     
     socket.on('roomMove', (body: any)  => {
+      console.log(body);
       //newRoomMoove.room
       //listderoom = newRoomMoove.room;
       //listderoom.forEach(element => {console.log(element)
       //console.log('alors le body 0 ' + body[0]);
-      console.log(body);
+      //console.log(body);
       });
       
       
@@ -81,7 +79,7 @@ export const Websocket = () => {
   const onSubmit = () => {
     socket.emit('newMessage', value, socket.id, oldroom, room);
     setCount(count + 1);
-    console.log(count);
+    console.log(value);
     setValue('');
   }
 
@@ -90,7 +88,16 @@ export const Websocket = () => {
       console.log('jai bien join room');
       //console.log(oldroom);
       //let oldroom = room;
-      socket.emit("joinRoom",value, socket.id, oldroom, room);
+      //socket.emit("joinRoom",value, socket.id, oldroom, room);
+      let mamamia = socket.id;
+      let delvalue = value;
+      
+      socket.emit("joinRoom", {
+        delvalue,
+        mamamia,
+        oldroom,
+        room
+      })
       //console.log(room);
     }
   };
@@ -129,26 +136,28 @@ export const Websocket = () => {
                 </div>
                 )}
         </p>
-                
-        
-      </div>
-      <div>
-        <h5 style={{textAlign: "center"}}>list utilisateur</h5>
+        <h5 style={{textAlign: "center"}}>list room</h5>
         <p style={{textAlign: "center"}}>
         
-                {listderoom == null ? (
+                {users[0] == null ? (
                   <div></div>
                 ) : (
             
                 <div>
-                  {}//listderoom
-                  
+                  {users[users.length - 1].roomlist.map((room) => (
+                    <div>
+                  {room}
+                    </div>            
+                  ))}   
                 </div>
                 )}
         </p>
                 
         
       </div>
+      
+     
+      
         <div>
           <input
             type="text"
@@ -186,4 +195,30 @@ socket.on('connect', () => {
 socket.on('passwordFeedback', (data) => {
     console.log(data);
 })
+*/
+
+/**
+<div>
+        
+<h5 style={{textAlign: "center"}}>list room</h5>
+<p style={{textAlign: "center"}}>
+
+        {RoomList.roomlist.length == null ? (
+          <div>dsad</div>
+        ) : (
+    
+        <div>
+          {RoomList.roomlist.map((room) => (
+            <div>
+              {room}
+              </div>
+          ))}
+          
+        </div>
+        )}
+</p>
+        
+
+</div>
+
 */
