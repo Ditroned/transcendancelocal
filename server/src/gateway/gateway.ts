@@ -7,7 +7,7 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { SocketAddress } from 'net';
-import { identity } from 'rxjs';
+import { identity, map } from 'rxjs';
 import { Server, Socket} from 'socket.io';
 
 
@@ -37,6 +37,10 @@ export class MyGateway implements OnModuleInit {
   
 
   onModuleInit() {
+
+                       /* INITALIZATION  */
+
+
     let maproom = new Map();
     maproom.set('joinroomname', new Set<string>);
     
@@ -50,7 +54,6 @@ export class MyGateway implements OnModuleInit {
       :
       (maproom.set('joinroomname', [socket.id]))
 
-
       //console.log(maproom);
       console.log(socket.id);
       console.log('Connected');
@@ -63,16 +66,20 @@ export class MyGateway implements OnModuleInit {
         this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
     }
 
-    console.log(this.listRoom);
-
+    console.log(this.listRoom);  
       this.server.emit('connected',{
         listUser : this.listUserr,
         roomlist : this.listRoom
       });
+      console.log(maproom);
+
+
+                           /* JOIN ROOM  */
       
       //console.log(maproom);
       socket.on("joinRoom", (userinfo: UserPayload) => {
         //console.log(userinfo.room);
+        //console.log('jesuisici');
         
         maproom.has(userinfo.room) ? 
           ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
@@ -84,26 +91,59 @@ export class MyGateway implements OnModuleInit {
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
-      this.server.sockets.socketsJoin('abc');
-      console.log(userinfo.oldroom);
+      //this.server.sockets.socketsJoin('abc');
+      //console.log(userinfo.oldroom);
       socket.join(userinfo.room);
       socket.leave(userinfo.oldroom);
+      //console.log(maproom);
         
        //console.log(maproom);
        this.server.emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom
     });
+    //console.log(this.listRoom);
+    
 
       });
       
 
-
+                /* DISCONNECT  */
 
 
       socket.on("disconnect", () => {
         let result : string[] = this.listUserr.filter(user => user !== socket.id);
         this.listUserr = result;
+
+
+
+        function leaveChannel(value, key, map) {
+          maproom.has(key) ?
+          (maproom.get(key).has(socket.id)) ?
+              (maproom.get(key).size == 1) ?  
+                  maproom.delete(key) : maproom.get(key).delete(socket.id)
+                :
+            console.log('bug leave mais pas de socket id present')
+  :
+  console.log('bug na pas le leaveroom')
+        }
+        maproom.forEach(leaveChannel);
+        console.log('avant ' + this.listRoom);
+        console.log('lenght ' + this.listRoom.length);
+        console.log(maproom);
+        console.log(this.listRoom);
+
+        /* + 5 car sinon pop bug ... */
+        for (var i = 0; i < this.listRoom.length + 5;i++) {
+          this.listRoom.pop()
+        }
+        console.log('apres ' + this.listRoom);
+        for (let key of maproom.keys()) {
+          this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
+      }
+      
+
+
         /*
         maproom.has('joinroomname') ?
           (maproom.get('joinroomname').has(socket.id)) ?
@@ -114,6 +154,7 @@ export class MyGateway implements OnModuleInit {
   :
   console.log('bug na pas le leaveroom')
   */
+  
   //console.log(maproom);
   //console.log(this.listRoom);
         this.server.emit('connected',{
@@ -124,6 +165,8 @@ export class MyGateway implements OnModuleInit {
       });
     });
   }
+
+                              /* newMESSAGE  */
 
   @SubscribeMessage('newMessage')
   onNewMessage(@ConnectedSocket() client: Socket,
@@ -137,6 +180,11 @@ export class MyGateway implements OnModuleInit {
     });
     //console.log(this.server.allSockets);
   }
+
+
+
+                            /* joinRoom  */
+
 
   @SubscribeMessage('joinRoom')
   onJoinRoom(@ConnectedSocket() client: Socket,
@@ -181,7 +229,8 @@ export class MyGateway implements OnModuleInit {
       //(console.log(value.values().next().value)) : (mamap.set(key,value))
       //(value.forEach(logSetElements)) : (console.log('cunuser'))
     }
-    console.log(this.listRoom);
+    //console.log(this.listRoom);
+    //console.log('jesuisici');
 
     /*
     this.server.emit('roomMove',{
@@ -189,6 +238,8 @@ export class MyGateway implements OnModuleInit {
     });
     */
   }
+
+
 
   @SubscribeMessage("disconnect")
   onNewDisconnection(@ConnectedSocket() client: Socket,
