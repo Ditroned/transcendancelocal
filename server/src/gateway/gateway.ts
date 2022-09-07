@@ -159,6 +159,11 @@ export class MyGateway implements OnModuleInit {
 
 
       });
+
+      socket.on("private message", (body:any) =>{
+
+
+      });
       
 
                  /*********************** DISCONNECT  ************************/
@@ -261,6 +266,21 @@ export class MyGateway implements OnModuleInit {
     //console.log(this.server.allSockets);
   }
 
+
+  @SubscribeMessage('private message')
+  onPrivateMessage(@ConnectedSocket() client: Socket,
+  @MessageBody() body: any,
+  ) {
+    //console.log(body[body.length - 1]);
+    //console.log(body.dmreceiver);
+    this.server.to(body.dmreceiver).emit('onMessage', {
+      msg: 'New Message',
+      content: body.value,
+      socketid: body.socketid,
+      //listMute: body[4]
+    });
+    //console.log(this.server.allSockets);
+  }
 
 
                             /* joinRoom  */

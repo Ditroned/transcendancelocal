@@ -37,6 +37,7 @@ export const Websocket = () => {
   const [count, setCount] = useState(0);
   const [inputpassword, setInputpassword] = useState('');
   const [kicklist, setKickList] = useState('');
+  const [dmreceiver, setDmreceiver] = useState('');
 
   //let listderoom = new Map<string,Set<string>>;
   const listderoom = useState(new Map<string,Set<string>>);
@@ -105,12 +106,27 @@ export const Websocket = () => {
     console.log(room);
     let socketid = socket.id;
     socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+    
 
     //setCount(count + 1);
     //console.log(room);
     //setValue('');
     //console.log(listMute);
   }
+
+  const onPrivatemessage = () => {
+    let socketid = socket.id;
+    socket.emit("private message", {
+      value,
+      socketid,
+      dmreceiver,
+      oldroom,
+      room,
+      listMute
+    })
+    setValue('');
+};
+  
 
   const joinRoom = () => {
     /*
@@ -192,10 +208,10 @@ export const Websocket = () => {
         <input
             placeholder="Private Message"
             type="text"
-            value={inputpassword}
-            onChange={(e) => setInputpassword(e.target.value)}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
           />
-      <button onClick={joinRoom}> Send</button>
+      <button onClick={(event) => [setDmreceiver(''),setDmreceiver(user),onPrivatemessage()]}> Send</button>
         </div>
                     </div>            
                   ))}   
