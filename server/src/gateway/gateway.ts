@@ -143,7 +143,8 @@ export class MyGateway implements OnModuleInit {
         console.log(this.roomadmin);
         console.log(this.dict);
 
-        this.roomadmin.get(body.room) === body.socketid ? (maproom.get(body.room).delete(body.kicklist))
+        this.roomadmin.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
+                                                        (maproom.get(body.room).delete(body.kicklist))
                                                                 : console.log('pas de droit administrateur')
                                                                 console.log(maproom);
         //client admin ? user dans la room ? map(room).key(user).delete + ?? roommove??
