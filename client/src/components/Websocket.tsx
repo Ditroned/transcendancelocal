@@ -20,7 +20,7 @@ type UserPayload = {
   listUser : string[];
   roomlist: string[];
   roomadmin: Map<string,string>;
-  dict: Map<string,string>;
+  dicta: Map<string,string>;
   socket : any;
 };
 
@@ -36,6 +36,7 @@ export const Websocket = () => {
   const socket = useContext(WebsocketContext);
   const [count, setCount] = useState(0);
   const [inputpassword, setInputpassword] = useState('');
+  const [kicklist, setKickList] = useState('');
 
   //let listderoom = new Map<string,Set<string>>;
   const listderoom = useState(new Map<string,Set<string>>);
@@ -53,7 +54,7 @@ export const Websocket = () => {
       
     });
     socket.on('connected', (newUser: UserPayload) => {
-      console.log(newUser.roomadmin);
+      console.log(newUser);
       setUsers((prev) => [...prev, newUser]);        
     });
     socket.on('onMessage', (newMessage: MessagePayload) => {
@@ -66,7 +67,7 @@ export const Websocket = () => {
     
     
     socket.on('roomMove', (newUser: UserPayload)  => {
-      console.log(newUser.roomadmin);
+      console.log(newUser);
       setUsers((prev) => [...prev, newUser]);
       //newRoomMoove.room
       //listderoom = newRoomMoove.room;
@@ -96,6 +97,18 @@ export const Websocket = () => {
     setCount(count + 1);
     //console.log(room);
     setValue('');
+    //console.log(listMute);
+  }
+
+  const onKick = () => {
+    //console.log(kicklist);
+    console.log(room);
+    let socketid = socket.id;
+    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+
+    //setCount(count + 1);
+    //console.log(room);
+    //setValue('');
     //console.log(listMute);
   }
 
@@ -170,7 +183,7 @@ export const Websocket = () => {
                     <div>
                   {user}<input type='button' value='Mute' onClick={(e) => (setListMute((prev) => [...prev,user]),clickMute())} />
                   <div>
-        <button onClick={joinRoom}> Kick</button>
+        <button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
         
         
         <button onClick={joinRoom}> Play Pong</button>

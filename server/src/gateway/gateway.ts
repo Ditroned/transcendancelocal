@@ -18,6 +18,8 @@ type UserPayload = {
   room : any;
   Ulistroom : string[];
   inputpassword : string;
+  roomadmin : Map<string,string>;
+  dict : Map<string,string>;
 };
 
 
@@ -31,6 +33,10 @@ type UserPayload = {
 export class MyGateway implements OnModuleInit {
   public listUserr : string[] = [];
   public listRoom : string[] = [];
+  public roomadmin : Map<string,string> = new Map<string,string>;
+  public dict : Map<string,string> = new Map<string,string>;
+  
+
   abc = this.listRoom;
 
   @WebSocketServer()
@@ -44,8 +50,8 @@ export class MyGateway implements OnModuleInit {
 
     let maproom = new Map();
     maproom.set('joinroomname', new Set<string>);
-    var dict = new Map();
-    var roomadmin = new Map();
+    //var dict = new Map();
+    //var roomadmin = new Map();
 
     //dict[key(obj1)] = obj1;
     
@@ -61,26 +67,9 @@ export class MyGateway implements OnModuleInit {
       ((maproom.get('joinroomname').has(socket.id)) ?  null : maproom.get('joinroomname').add(socket.id))
       :
       (maproom.set('joinroomname', [socket.id]))
-      //console.log(dict);
 
-    //version maproompassword
-    //maproompassword.set('joinroomname','');
-    //console.log(maproompassword);
-    
-    //maproompassword.has('joinroomname') ? console.log('oui') : console.log('non')
-
-
-    /*
-      ((maproom.get('joinroomname').has(socket.id)) ?  null : maproom.get('joinroomname').add(socket.id))
-      :
-      (maproom.set('joinroomname', [socket.id]))
-      */
-
-
-
-      //console.log(maproom);
-      console.log(socket.id);
-      console.log('Connected');
+      console.log(socket.id + ' Connected');
+      //console.log('Connected');
       
       this.listUserr.push(socket.id);
       for (var i = 0; i < this.listRoom.length;i++) {
@@ -90,30 +79,25 @@ export class MyGateway implements OnModuleInit {
         this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
     }
 
-    //console.log(this.listRoom);  
+    //console.log(this.roomadmin);
       this.server.emit('connected',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
-        dict : dict,
-        roomadmin : roomadmin
+        dict : this.dict,
+        roomadmin : this.roomadmin
       });
-      //console.log(maproom);
 
 
-                           /* JOIN ROOM  */
+
+
+
+                           /*********************** JOIN ROOM  ************************/
       
-      //console.log(maproom);
-      socket.on("joinRoom", (userinfo: UserPayload) => {
-        //console.log(userinfo.room);
-        //console.log('jesuisici');
 
-        /*
-    si room existe pas -> creer avec le pass donne (+ droit admin user)
-    si room existe -> check password -> incorrect console log 
-                                      -> correct join
-    */
+      socket.on("joinRoom", (userinfo: UserPayload) => {
+
         maproom.has(userinfo.room) ? 
-          (dict.get(userinfo.room) === userinfo.inputpassword) ?
+          (this.dict.get(userinfo.room) === userinfo.inputpassword) ?
 
 
             maproom.has(userinfo.room) ? 
@@ -130,34 +114,53 @@ export class MyGateway implements OnModuleInit {
           maproom.has(userinfo.room) ? 
           ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
           :
-          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),dict.set(userinfo.room,userinfo.inputpassword),roomadmin.set(userinfo.room,socket.id))
+          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.dict.set(userinfo.room,userinfo.inputpassword),this.roomadmin.set(userinfo.room,socket.id))
         
-        //console.log('essaidejoinroom');
-        //console.log(dict);
-        //console.log(roomadmin);
+
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
-      //this.server.sockets.socketsJoin('abc');
-      //console.log(userinfo.oldroom);
       socket.join(userinfo.room);
       socket.leave(userinfo.oldroom);
-      //console.log(maproom);
-        
-       console.log(roomadmin);
+       let babar = new Map();
+       babar = this.dict;
        this.server.emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
-        dict : dict,
-        roomadmin : roomadmin
+        dicta : this.dict,
+        roomadmin : this.roomadmin
     });
-    //console.log(this.listRoom);
-    
+      });
+
+
+                        /*********************** KICK EVENT  ************************/
+
+
+
+
+      socket.on("kickevent" ,(body:any) =>{
+        console.log(body.socketid);
+        console.log(this.roomadmin);
+        console.log(this.dict);
+
+        this.roomadmin.get(body.room) === body.socketid ? (maproom.get(body.room).delete(body.kicklist))
+                                                                : console.log('pas de droit administrateur')
+                                                                console.log(maproom);
+        //client admin ? user dans la room ? map(room).key(user).delete + ?? roommove??
+                                            // : null
+                        // : null
+          
+          //console.log(this.roomadmin);
+          //console.log(userinfo.room);
+          //this.roomadmin[userinfo.room]
+                        //this.dict[userinfo.room]
+
+
 
       });
       
 
-                /* DISCONNECT  */
+                 /*********************** DISCONNECT  ************************/
 
 
       socket.on("disconnect", () => {
@@ -177,10 +180,10 @@ export class MyGateway implements OnModuleInit {
   console.log('bug na pas le leaveroom')
         }
         maproom.forEach(leaveChannel);
-        console.log('avant ' + this.listRoom);
-        console.log('lenght ' + this.listRoom.length);
-        console.log(maproom);
-        console.log(this.listRoom);
+        //console.log('avant ' + this.listRoom);
+        //console.log('lenght ' + this.listRoom.length);
+        //console.log(maproom);
+        //console.log(this.listRoom);
 
         /* + 5 car sinon pop bug ... */
         for (var i = 0; i < this.listRoom.length + 5;i++) {
@@ -193,15 +196,22 @@ export class MyGateway implements OnModuleInit {
 
       function eraseadmin(value,key,map){
         //console.log(roomadmin.get(key) + ' et la value ' + socket.id);
-        roomadmin.get(key) === socket.id ? roomadmin.delete(key) : null
+        value === socket.id ? 
+        map.delete(key) 
+        : null
       }
-      roomadmin.forEach(eraseadmin);
+      this.roomadmin.forEach(eraseadmin);
+      //check si ya admin a chaque room
 
 
       function eraseroompassword(value,key,map){
-        maproom.has(key) ? null : dict.delete(key)
+        maproom.has(key) ? null : map.delete(key)
       }
-      dict.forEach(eraseroompassword);
+      this.dict.forEach(eraseroompassword);
+
+      console.log(maproom);
+      console.log(this.roomadmin);
+      console.log(this.dict);
 
 
       
@@ -220,11 +230,13 @@ export class MyGateway implements OnModuleInit {
   
   //console.log(maproom);
   //console.log(this.listRoom);
+  //console.log(this.roomadmin);
+
         this.server.emit('connected',{
           listUser : this.listUserr,
           roomlist : this.listRoom,
-          dict : dict,
-          roomadmin : roomadmin
+          dict : this.dict,
+          roomadmin : this.roomadmin
         });
      
       });
@@ -239,7 +251,7 @@ export class MyGateway implements OnModuleInit {
   ) {
     //console.log(body[body.length - 1]);
     //console.log(body[4]);
-    this.server.to(body[body.length - 1]).emit('onMessage', {
+    this.server.to(body[body.length - 2]).emit('onMessage', {
       msg: 'New Message',
       content: body[0],
       socketid: body[1],
@@ -307,11 +319,19 @@ export class MyGateway implements OnModuleInit {
   }
 
 
+@SubscribeMessage("kickevent")
+  onKickEvent(@ConnectedSocket() client: Socket,
+  @MessageBody() body: any,
+  ) {
+    //console.log(body.socketid);
+    //console.log('jesuisjmsdeconnect par cette bouclie');
+  }
+
 
   @SubscribeMessage("disconnect")
   onNewDisconnection(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
-    console.log('jesuisjmsdeconnect par cette bouclie');
+    //console.log('jesuisjmsdeconnect par cette bouclie');
   }
 }
