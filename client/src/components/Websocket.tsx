@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { REPL_MODE_SLOPPY } from 'repl';
 import { io } from 'socket.io-client';
 import { Tracing } from 'trace_events';
-import { TypePredicateKind } from 'typescript';
+import { StringMappingType, TypePredicateKind } from 'typescript';
 import { WebsocketContext } from '../contexts/WebsocketContext';
 
 type MessagePayload = {
@@ -19,6 +19,8 @@ type UserPayload = {
   nickname: string;
   listUser : string[];
   roomlist: string[];
+  roomadmin: Map<string,string>;
+  dict: Map<string,string>;
   socket : any;
 };
 
@@ -26,6 +28,8 @@ export const Websocket = () => {
   const [value, setValue] = useState('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
+  const [listMute, setListMute] = useState<string[]>([]);
+  //const listMute : string[] = [];
   //const [RoomList, setRoomList] = useState<RoomPayload[]>([]);
   const [room, setRoom] = useState('joinroomname');
   const [oldroom, setOldroom] = useState('joinroomname');
@@ -39,22 +43,30 @@ export const Websocket = () => {
 
 
   useEffect(() => {
+    //const listMute : string[] = [];
+    //listMute.push('lala');
+    //console.log(listMute);
+    
+
     socket.on('connection', (room: string) => {
       console.log('Connected!');
       
     });
     socket.on('connected', (newUser: UserPayload) => {
-      //console.log(newUser.roomlist);
+      console.log(newUser.roomadmin);
       setUsers((prev) => [...prev, newUser]);        
     });
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
-      setMessages((prev) => [...prev, newMessage]);
+      //console.log(listMute);
+      //console.log(newMessage.socketid);
+      listMute.indexOf(newMessage.socketid) === -1 ? (setMessages((prev) => [...prev, newMessage])) : console.log('user mute')
+      //setMessages((prev) => [...prev, newMessage]);
     });
     
     
     socket.on('roomMove', (newUser: UserPayload)  => {
-      //console.log(newUser);
+      console.log(newUser.roomadmin);
       setUsers((prev) => [...prev, newUser]);
       //newRoomMoove.room
       //listderoom = newRoomMoove.room;
@@ -76,14 +88,15 @@ export const Websocket = () => {
       socket.off('onMessage');
       socket.off('connection');
     };
-  }, [socket]);
+  }, [socket,listMute]);
 
   const onSubmit = () => {
-    socket.emit('newMessage', value, socket.id, oldroom, room);
+    socket.emit('newMessage', value, socket.id, oldroom, room, listMute);
 
     setCount(count + 1);
-    console.log(room);
+    //console.log(room);
     setValue('');
+    //console.log(listMute);
   }
 
   const joinRoom = () => {
@@ -95,7 +108,7 @@ export const Websocket = () => {
     if (room !== "") {
       let mamamia = socket.id;
       let delvalue = value;
-      console.log(inputpassword);
+      //console.log(inputpassword);
       
       socket.emit("joinRoom", {
         delvalue,
@@ -108,7 +121,26 @@ export const Websocket = () => {
     }
   };
 
+  const clickMute = () => {
+    /*
+    si room existe pas -> creer avec le pass donne (+ droit admin user)
+    si room existe -> check password -> incorrect console log 
+                                      -> correct join
+    */
+    //listMute.push(user);
+    console.log(listMute);
+    console.log(count);
+  };
+
+  function f1(){  
+    alert(value);
+}
+
+
+
   return (
+   
+    
     <div>
       <div>
         <h6>This is my beautiful chat , your id is {socket.id} </h6>
@@ -136,7 +168,22 @@ export const Websocket = () => {
                 <div>
                   {users[users.length - 1].listUser.map((user) => (
                     <div>
-                  {user}
+                  {user}<input type='button' value='Mute' onClick={(e) => (setListMute((prev) => [...prev,user]),clickMute())} />
+                  <div>
+        <button onClick={joinRoom}> Kick</button>
+        
+        
+        <button onClick={joinRoom}> Play Pong</button>
+        
+        
+        <input
+            placeholder="Private Message"
+            type="text"
+            value={inputpassword}
+            onChange={(e) => setInputpassword(e.target.value)}
+          />
+      <button onClick={joinRoom}> Send</button>
+        </div>
                     </div>            
                   ))}   
                 </div>
@@ -193,6 +240,7 @@ export const Websocket = () => {
           />
       <button onClick={joinRoom}> Join Room</button>
         </div>
+        
     </div>
     
   );

@@ -90,12 +90,14 @@ export class MyGateway implements OnModuleInit {
         this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
     }
 
-    console.log(this.listRoom);  
+    //console.log(this.listRoom);  
       this.server.emit('connected',{
         listUser : this.listUserr,
-        roomlist : this.listRoom
+        roomlist : this.listRoom,
+        dict : dict,
+        roomadmin : roomadmin
       });
-      console.log(maproom);
+      //console.log(maproom);
 
 
                            /* JOIN ROOM  */
@@ -131,8 +133,8 @@ export class MyGateway implements OnModuleInit {
           (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),dict.set(userinfo.room,userinfo.inputpassword),roomadmin.set(userinfo.room,socket.id))
         
         //console.log('essaidejoinroom');
-        console.log(dict);
-        console.log(roomadmin);
+        //console.log(dict);
+        //console.log(roomadmin);
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
@@ -142,10 +144,12 @@ export class MyGateway implements OnModuleInit {
       socket.leave(userinfo.oldroom);
       //console.log(maproom);
         
-       //console.log(maproom);
+       console.log(roomadmin);
        this.server.emit('roomMove',{
         listUser : this.listUserr,
-        roomlist : this.listRoom
+        roomlist : this.listRoom,
+        dict : dict,
+        roomadmin : roomadmin
     });
     //console.log(this.listRoom);
     
@@ -218,7 +222,9 @@ export class MyGateway implements OnModuleInit {
   //console.log(this.listRoom);
         this.server.emit('connected',{
           listUser : this.listUserr,
-          roomlist : this.listRoom
+          roomlist : this.listRoom,
+          dict : dict,
+          roomadmin : roomadmin
         });
      
       });
@@ -232,10 +238,12 @@ export class MyGateway implements OnModuleInit {
   @MessageBody() body: any,
   ) {
     //console.log(body[body.length - 1]);
+    //console.log(body[4]);
     this.server.to(body[body.length - 1]).emit('onMessage', {
       msg: 'New Message',
       content: body[0],
-      socketid: body[1]
+      socketid: body[1],
+      //listMute: body[4]
     });
     //console.log(this.server.allSockets);
   }
