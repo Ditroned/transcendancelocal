@@ -1,6 +1,8 @@
 //import { Socket } from 'net';
 import { IOType } from 'child_process';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, ReactComponentElement } from 'react';
+import * as React from 'react';
+
 import { REPL_MODE_SLOPPY } from 'repl';
 import { io } from 'socket.io-client';
 import { Tracing } from 'trace_events';
@@ -39,17 +41,11 @@ export const Websocket = () => {
   const [kicklist, setKickList] = useState('');
   const [dmreceiver, setDmreceiver] = useState('');
 
-  //let listderoom = new Map<string,Set<string>>;
   const listderoom = useState(new Map<string,Set<string>>);
 
 
 
   useEffect(() => {
-    //const listMute : string[] = [];
-    //listMute.push('lala');
-    //console.log(listMute);
-    
-
     socket.on('connection', (room: string) => {
       console.log('Connected!');
       
@@ -60,30 +56,15 @@ export const Websocket = () => {
     });
     socket.on('onMessage', (newMessage: MessagePayload) => {
       console.log('onMessage event received!');
-      //console.log(listMute);
-      //console.log(newMessage.socketid);
       listMute.indexOf(newMessage.socketid) === -1 ? (setMessages((prev) => [...prev, newMessage])) : console.log('user mute')
-      //setMessages((prev) => [...prev, newMessage]);
     });
     
     
     socket.on('roomMove', (newUser: UserPayload)  => {
       console.log(newUser);
       setUsers((prev) => [...prev, newUser]);
-      //newRoomMoove.room
-      //listderoom = newRoomMoove.room;
-      //listderoom.forEach(element => {console.log(element)
-      //console.log('alors le body 0 ' + body[0]);
-      //console.log(body);
       });
       
-      
-
-      //console.log(newRoomMoove);
-      //setRoomList((prev) => [newRoomMoove]);
-
-    
-
     return () => {
       console.log('Unregistering Events...');
       socket.off('connect');
@@ -96,22 +77,13 @@ export const Websocket = () => {
     socket.emit('newMessage', value, socket.id, oldroom, room, listMute);
 
     setCount(count + 1);
-    //console.log(room);
     setValue('');
-    //console.log(listMute);
   }
 
   const onKick = () => {
-    //console.log(kicklist);
     console.log(room);
     let socketid = socket.id;
     socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
-    
-
-    //setCount(count + 1);
-    //console.log(room);
-    //setValue('');
-    //console.log(listMute);
   }
 
   const onPrivatemessage = () => {
@@ -129,15 +101,9 @@ export const Websocket = () => {
   
 
   const joinRoom = () => {
-    /*
-    si room existe pas -> creer avec le pass donne (+ droit admin user)
-    si room existe -> check password -> incorrect console log 
-                                      -> correct join
-    */
     if (room !== "") {
       let mamamia = socket.id;
       let delvalue = value;
-      //console.log(inputpassword);
       
       socket.emit("joinRoom", {
         delvalue,
@@ -151,12 +117,6 @@ export const Websocket = () => {
   };
 
   const clickMute = () => {
-    /*
-    si room existe pas -> creer avec le pass donne (+ droit admin user)
-    si room existe -> check password -> incorrect console log 
-                                      -> correct join
-    */
-    //listMute.push(user);
     console.log(listMute);
     console.log(count);
   };
@@ -167,9 +127,11 @@ export const Websocket = () => {
 
 
 
+
+
   return (
    
-    
+    <div>
     <div>
       <div>
         <h6>This is my beautiful chat , your id is {socket.id} </h6>
@@ -197,14 +159,11 @@ export const Websocket = () => {
                 <div>
                   {users[users.length - 1].listUser.map((user) => (
                     <div>
-                  {user}<input type='button' value='Mute' onClick={(e) => (setListMute((prev) => [...prev,user]),clickMute())} />
-                  <div>
-        <button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
+                  {user}<input type='button' value='Mute' onClick={(e) => (setListMute((prev) => [...prev,user]),clickMute())} /><button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
         
         
         <button onClick={joinRoom}> Play Pong</button>
-        
-        
+        <button onClick={joinRoom}> Profile</button>
         <input
             placeholder="Private Message"
             type="text"
@@ -212,6 +171,11 @@ export const Websocket = () => {
             onChange={(e) => setValue(e.target.value)}
           />
       <button onClick={(event) => [setDmreceiver(''),setDmreceiver(user),onPrivatemessage()]}> Send</button>
+                  <div>
+
+        
+        
+        
         </div>
                     </div>            
                   ))}   
@@ -271,9 +235,14 @@ export const Websocket = () => {
         </div>
         
     </div>
+    <>
+    
+  </>
+  </div>
     
   );
-};
+
+
 /*
 const socket = io('http://localhost:3000/test');
 
@@ -311,4 +280,4 @@ socket.on('passwordFeedback', (data) => {
 
 </div>
 
-*/
+          */}
