@@ -74,7 +74,8 @@ export const Websocket = () => {
   }, [socket,listMute]);
 
   const onSubmit = () => {
-    socket.emit('newMessage', value, socket.id, oldroom, room, listMute);
+    if (value.length > 0)
+      socket.emit('newMessage', value, socket.id, oldroom, room, listMute);
 
     setCount(count + 1);
     setValue('');
@@ -88,6 +89,8 @@ export const Websocket = () => {
 
   const onPrivatemessage = () => {
     let socketid = socket.id;
+    if (value.length > 0 )
+    {
     socket.emit("private message", {
       value,
       socketid,
@@ -97,6 +100,7 @@ export const Websocket = () => {
       listMute
     })
     setValue('');
+  }
 };
   
 
