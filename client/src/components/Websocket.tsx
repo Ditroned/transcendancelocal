@@ -89,6 +89,7 @@ export const Websocket = () => {
 
   const onPrivatemessage = () => {
     let socketid = socket.id;
+    console.log('id du destinataire ' + dmreceiver);
     if (value.length > 0 )
     {
     socket.emit("private message", {
@@ -172,9 +173,13 @@ export const Websocket = () => {
             placeholder="Private Message"
             type="text"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => [setValue(e.target.value),setDmreceiver(user)]}
           />
-      <button onClick={(event) => [setDmreceiver(''),setDmreceiver(user),onPrivatemessage()]}> Send</button>
+      <button onClick={() => [[setDmreceiver(user)],[onPrivatemessage()]]}> Send</button>
+      <button onClick={joinRoom}> Mute as admin</button>
+      <button onClick={joinRoom}> Ban as admin</button>
+      <button onClick={joinRoom}> Set admin</button>
+      <button onClick={joinRoom}> PW change</button>
                   <div>
 
         
@@ -237,6 +242,15 @@ export const Websocket = () => {
           />
       <button onClick={joinRoom}> Join Room</button>
         </div>
+        <p style={{textAlign: "center"}}>
+        <input
+            placeholder="Room to leave"
+            type="text"
+            value={inputpassword}
+            onChange={(e) => setInputpassword(e.target.value)}
+          />
+      <button onClick={joinRoom}> Leave Room</button>
+      </p>
         
     </div>
     <>

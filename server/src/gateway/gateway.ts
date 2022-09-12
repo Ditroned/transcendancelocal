@@ -224,6 +224,7 @@ export class MyGateway implements OnModuleInit {
       content: body.value,
       socketid: body.socketid,
     });
+    console.log(body.dmreceiver);
   }
 
                             /* joinRoom  */
