@@ -65,6 +65,10 @@ export const Websocket = () => {
     socket.on('roomMove', (newUser: UserPayload)  => {
       console.log(newUser);
       setUsers((prev) => [...prev, newUser]);
+      console.log(oldroom);
+      setOldroom(room);
+      setRoom(newUser.mynewroom);
+      console.log(room);
       //setOldroom(room);
       //setRoom(newUser.mynewroom);
       /*

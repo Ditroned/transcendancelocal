@@ -121,7 +121,7 @@ export class MyGateway implements OnModuleInit {
       console.log(userinfo.oldroom);
        let babar = new Map();
        babar = this.dict;
-       this.server.emit('roomMove',{
+       this.server.to(socket.id).emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
         dicta : this.dict,
