@@ -111,19 +111,22 @@ export class MyGateway implements OnModuleInit {
           :
           (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.dict.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id))
         
-
+//seulement si tout ok , alors on join et leave ... sinon wtf!!!
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
       socket.join(userinfo.room);
+
       socket.leave(userinfo.oldroom);
+      console.log(userinfo.oldroom);
        let babar = new Map();
        babar = this.dict;
        this.server.emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
         dicta : this.dict,
-        roomowner : this.roomowner
+        roomowner : this.roomowner,
+        mynewroom : userinfo.room,
     });
       });
 
@@ -145,20 +148,30 @@ export class MyGateway implements OnModuleInit {
         {
 
         this.roomowner.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
-                                                        (maproom.get(body.room).delete(body.kicklist))
+                                                        (maproom.get(body.room).delete(body.kicklist),console.log('oui'),this.server.in(body.kicklist).socketsLeave(body.room),
+                                                        this.server.in(body.kicklist).emit('roomMove',{
+                                                          listUser : this.listUserr,
+                                                          roomlist : this.listRoom,
+                                                          dicta : this.dict,
+                                                          roomowner : this.roomowner,
+                                                          mynewroom : undefined
+                                                      }))
                                                                 : console.log('pas de droit administrateur')
-                                                                console.log(maproom);
-                                                                let unaray = new Array;
-                                                                unaray.push(body.kicklist);
-                                                                this.server.in(body.kicklist).socketsLeave(body.room);
-                                                                /*
-                                                                this.server.emit('roomMove',{
-                                                                  listUser : this.listUserr,
-                                                                  roomlist : this.listRoom,
-                                                                  dicta : this.dict,
-                                                                  roomowner : this.roomowner
-                                                              });
-                                                              */
+/*
+      console.log(maproom);
+      let unaray = new Array;
+      unaray.push(body.kicklist);
+      this.server.in(body.kicklist).socketsLeave(body.room);
+      
+      this.server.in(body.kicklist).emit('roomMove',{
+        listUser : this.listUserr,
+        roomlist : this.listRoom,
+        dicta : this.dict,
+        roomowner : this.roomowner,
+        mynewroom : undefined
+    });
+    */
+                                                              
         }
 
       });
@@ -242,10 +255,10 @@ export class MyGateway implements OnModuleInit {
   onNewMessage(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
-    this.server.to(body[body.length - 2]).emit('onMessage', {
+    this.server.to(body.room).emit('onMessage', {
       msg: 'New Message',
-      content: body[0],
-      socketid: body[1],
+      content: body.value,
+      socketid: body.socketid,
     });
   }
 
@@ -270,8 +283,8 @@ export class MyGateway implements OnModuleInit {
   @MessageBody() body: any,
   ) {
     
-    client.leave(body[body.length - 2]);
-    client.join(body[body.length - 1]);
+    client.leave(body.oldroom);
+    client.join(body.room);
     for (var i = 0; i < this.listRoom.length;i++) {
       this.listRoom.pop
     }

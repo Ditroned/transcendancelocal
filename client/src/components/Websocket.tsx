@@ -8,6 +8,7 @@ import { io } from 'socket.io-client';
 import { Tracing } from 'trace_events';
 import { StringMappingType, TypePredicateKind } from 'typescript';
 import { WebsocketContext } from '../contexts/WebsocketContext';
+import { setEngine } from 'crypto';
 
 type MessagePayload = {
   content: string;
@@ -24,6 +25,7 @@ type UserPayload = {
   roomowner: Map<string,string>;
   dicta: Map<string,string>;
   socket : any;
+  mynewroom : string;
 };
 
 export const Websocket = () => {
@@ -63,6 +65,12 @@ export const Websocket = () => {
     socket.on('roomMove', (newUser: UserPayload)  => {
       console.log(newUser);
       setUsers((prev) => [...prev, newUser]);
+      //setOldroom(room);
+      //setRoom(newUser.mynewroom);
+      /*
+      if (newUser.mynewroom === undefined)
+        setRoom('');
+        */
       });
       
     return () => {
@@ -74,8 +82,9 @@ export const Websocket = () => {
   }, [socket,listMute]);
 
   const onSubmit = () => {
+    let socketid = socket.id;
     if (value.length > 0)
-      socket.emit('newMessage', value, socket.id, oldroom, room, listMute);
+      socket.emit('newMessage', {value, socketid, oldroom, room, listMute});
 
     setCount(count + 1);
     setValue('');
