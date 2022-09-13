@@ -49,6 +49,7 @@ export class MyGateway implements OnModuleInit {
   
 
   onModuleInit() {
+    //console.log(this.server.socketsLeave);
 
     function checkSocket(socketid) {
       return socketid !== this.socket.id;
@@ -60,7 +61,7 @@ export class MyGateway implements OnModuleInit {
     function cleanMapStringSocket(value, key, map) {
       value === this.socket.id ? map.delete(key) : null
     }
-    function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid){
+    function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid,socket,server,listRoom,listUserr){
       roomowner.get(room) === socketid ? roomowner.delete(room) : null
       //let roomadmintemp = new Array();
       //roomadmintemp = roomadmin.get(room).filter(elem => elem !== socketid);
@@ -70,6 +71,22 @@ export class MyGateway implements OnModuleInit {
       setmaproomtemp = values.filter(elem => elem !== socketid);
       //setmaproomtemp = maproom.get(room).filter(elem => elem !== socketid);
       setmaproomtemp.length > 0 ? maproom.set(room, setmaproomtemp) : (maproom.delete(room),roompassword.delete(room))
+      for (var i = 0; i < listRoom.length + 5;i++) {
+        listRoom.pop()
+      }
+      for (let key of maproom.keys()) {
+        listRoom.lastIndexOf(key) === -1 ? listRoom.push(key) : null;
+    }
+      //this.server.socketsLeave(room);
+
+      socket.leave(room);
+      server.emit('connected',{
+        listUser : listUserr,
+        roomlist : listRoom,
+        roompassword : roompassword,
+        roomowner : roomowner
+      });
+
     }
     function leaveAndClean(room,roomowner,roomadmin,roompassword,maproom){
       roomowner.forEach(cleanMapStringSocket);
@@ -179,14 +196,14 @@ export class MyGateway implements OnModuleInit {
 
 
       socket.on("kickevent" ,(body:any) =>{
-        console.log(body.socketid);
-        console.log(this.roomowner);
-        console.log(this.roompassword);
+        //console.log(body.socketid);
+        //console.log(this.roomowner);
+        //console.log(this.roompassword);
         //console.log(Client.name);
 
         let socketid = body.socketid;
 
-        leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,body.socketid);
+        leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,body.socketid,socket,this.server,this.listRoom,this.listUserr);
         console.log(maproom);
       console.log(this.roomowner);
       console.log(this.roompassword);
