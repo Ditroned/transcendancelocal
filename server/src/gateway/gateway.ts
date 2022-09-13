@@ -11,6 +11,7 @@ import { SocketAddress } from 'net';
 import { identity, map } from 'rxjs';
 import { Server, Socket} from 'socket.io';
 import { Client } from 'socket.io/dist/client';
+import { moveMessagePortToContext } from 'worker_threads';
 
 
 type UserPayload = {
@@ -50,6 +51,7 @@ export class MyGateway implements OnModuleInit {
 
   onModuleInit() {
     //console.log(this.server.socketsLeave);
+    this.roompassword.set('joinroomname','');
 
     function checkSocket(socketid) {
       return socketid !== this.socket.id;
@@ -66,11 +68,15 @@ export class MyGateway implements OnModuleInit {
       //let roomadmintemp = new Array();
       //roomadmintemp = roomadmin.get(room).filter(elem => elem !== socketid);
       //roomadmintemp.length > 0 ? roomadmin.set(room, roomadminttemp) : roomadmin.delete(room)
-      let setmaproomtemp = [];
-      let values = Object.values(maproom.get(room));
-      setmaproomtemp = values.filter(elem => elem !== socketid);
+      //let setmaproomtemp = [];
+      //let values = Object.values(maproom.get(room));
+      //setmaproomtemp = values.filter(elem => elem !== socketid);
+      maproom.get(room).forEach(elem => { if (elem === socketid) {maproom.get(room).delete(socketid);}});
+      maproom.get(room).size > 0 ? null : (maproom.delete(room),roompassword.delete(room))
+
+      //console.log(maproom.get(room));
       //setmaproomtemp = maproom.get(room).filter(elem => elem !== socketid);
-      setmaproomtemp.length > 0 ? maproom.set(room, setmaproomtemp) : (maproom.delete(room),roompassword.delete(room))
+      //setmaproomtemp.length > 0 ? maproom.set(room, setmaproomtemp) : (maproom.delete(room),roompassword.delete(room))
       for (var i = 0; i < listRoom.length + 5;i++) {
         listRoom.pop()
       }
@@ -80,6 +86,13 @@ export class MyGateway implements OnModuleInit {
       //this.server.socketsLeave(room);
 
       socket.leave(room);
+      server.to(socketid).emit('roomMove',{
+        listUser : listUserr,
+        roomlist : listRoom,
+        roompassworda : roompassword,
+        roomowner : roomowner,
+        mynewroom : 'joinroomname',
+    });
       server.emit('connected',{
         listUser : listUserr,
         roomlist : listRoom,
@@ -140,15 +153,17 @@ export class MyGateway implements OnModuleInit {
       
 
       socket.on("joinRoom", (userinfo: UserPayload) => {
+        let success = 0;
+
 
         maproom.has(userinfo.room) ? 
           (this.roompassword.get(userinfo.room) === userinfo.inputpassword) ?
 
 
             maproom.has(userinfo.room) ? 
-          ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
+          ((maproom.get(userinfo.room).has(socket.id)) ?  null : (maproom.get(userinfo.room).add(socket.id),socket.join(userinfo.room),socket.leave(userinfo.oldroom),success=1))
           :
-          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id))
+          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),socket.join(userinfo.room),socket.leave(userinfo.oldroom),success=1)
 
           :
 
@@ -156,21 +171,15 @@ export class MyGateway implements OnModuleInit {
 
           :
 
-          maproom.has(userinfo.room) ? 
-          ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
-          :
-          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.roompassword.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id))
+          
+          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.roompassword.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id),socket.join(userinfo.room),socket.leave(userinfo.oldroom),success=1)
         
-//seulement si tout ok , alors on join et leave ... sinon wtf!!!
+
         for (let key of maproom.keys()) {
           this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
       }
-      socket.join(userinfo.room);
 
-      socket.leave(userinfo.oldroom);
-      console.log(userinfo.oldroom);
-       let babar = new Map();
-       babar = this.roompassword;
+      if (success === 1){
        this.server.to(socket.id).emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
@@ -187,6 +196,7 @@ export class MyGateway implements OnModuleInit {
     console.log(maproom);
       console.log(this.roomowner);
       console.log(this.roompassword);
+  }
       });
 
 
@@ -334,6 +344,8 @@ export class MyGateway implements OnModuleInit {
   onNewMessage(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
+    console.log(body.room);
+    client.join(body.room);
     this.server.to(body.room).emit('onMessage', {
       msg: 'New Message',
       content: body.value,
