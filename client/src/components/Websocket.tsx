@@ -21,7 +21,7 @@ type UserPayload = {
   nickname: string;
   listUser : string[];
   roomlist: string[];
-  roomadmin: Map<string,string>;
+  roomowner: Map<string,string>;
   dicta: Map<string,string>;
   socket : any;
 };
@@ -84,6 +84,8 @@ export const Websocket = () => {
   const onKick = () => {
     console.log(room);
     let socketid = socket.id;
+    if (kicklist == socketid)
+      setRoom('');
     socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
   }
 
@@ -101,6 +103,20 @@ export const Websocket = () => {
       listMute
     })
     setValue('');
+  }
+};
+
+const onSetAdmin = () => {
+  let socketid = socket.id;
+  let selecteduser = dmreceiver;
+  console.log(dmreceiver);
+  console.log('jessai de setupadmin');
+  if (value !== socketid){
+  socket.emit('setadmin',{
+    socketid,
+    room,
+    selecteduser
+    })
   }
 };
   
@@ -164,7 +180,8 @@ export const Websocket = () => {
                 <div>
                   {users[users.length - 1].listUser.map((user) => (
                     <div>
-                  {user}<input type='button' value='Mute' onClick={(e) => (setListMute((prev) => [...prev,user]),clickMute())} /><button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
+                  {user}<input type='button' value='Mute' onClick={(e) => [(listMute.indexOf(user) === -1 ? (setListMute((prev) => [...prev,user]),clickMute()) : setListMute(listMute.filter(muted => muted != user))),console.log(listMute)]} />
+                  <button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
         
         
         <button onClick={joinRoom}> Play Pong</button>
@@ -178,7 +195,7 @@ export const Websocket = () => {
       <button onClick={() => [[setDmreceiver(user)],[onPrivatemessage()]]}> Send</button>
       <button onClick={joinRoom}> Mute as admin</button>
       <button onClick={joinRoom}> Ban as admin</button>
-      <button onClick={joinRoom}> Set admin</button>
+      <button onClick={(event) => [setDmreceiver(user),onSetAdmin()]}> Set admin</button>
       <button onClick={joinRoom}> PW change</button>
                   <div>
 

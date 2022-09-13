@@ -6,6 +6,7 @@ import {
   WebSocketServer,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { timingSafeEqual } from 'crypto';
 import { SocketAddress } from 'net';
 import { identity, map } from 'rxjs';
 import { Server, Socket} from 'socket.io';
@@ -18,7 +19,8 @@ type UserPayload = {
   room : any;
   Ulistroom : string[];
   inputpassword : string;
-  roomadmin : Map<string,string>;
+  roomowner : Map<string,string>;
+  roomadmin : Map<string,string[]>;
   dict : Map<string,string>;
 };
 
@@ -33,7 +35,8 @@ type UserPayload = {
 export class MyGateway implements OnModuleInit {
   public listUserr : string[] = [];
   public listRoom : string[] = [];
-  public roomadmin : Map<string,string> = new Map<string,string>;
+  public roomowner : Map<string,string> = new Map<string,string>;
+  public roomadmin : Map<string,string[]> = new Map<string,string[]>;
   public dict : Map<string,string> = new Map<string,string>;
   
 
@@ -70,12 +73,13 @@ export class MyGateway implements OnModuleInit {
       for (let key of maproom.keys()) {
         this.listRoom.lastIndexOf(key) === -1 ? this.listRoom.push(key) : null;
     }
+    
 
       this.server.emit('connected',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
         dict : this.dict,
-        roomadmin : this.roomadmin
+        roomowner : this.roomowner
       });
 
 
@@ -105,7 +109,7 @@ export class MyGateway implements OnModuleInit {
           maproom.has(userinfo.room) ? 
           ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
           :
-          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.dict.set(userinfo.room,userinfo.inputpassword),this.roomadmin.set(userinfo.room,socket.id))
+          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.dict.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id))
         
 
         for (let key of maproom.keys()) {
@@ -119,29 +123,60 @@ export class MyGateway implements OnModuleInit {
         listUser : this.listUserr,
         roomlist : this.listRoom,
         dicta : this.dict,
-        roomadmin : this.roomadmin
+        roomowner : this.roomowner
     });
       });
 
 
                         /*********************** KICK EVENT  ************************/
 
-
+//if bug and socket anonymous then serv crash
 
 
       socket.on("kickevent" ,(body:any) =>{
         console.log(body.socketid);
-        console.log(this.roomadmin);
+        console.log(this.roomowner);
         console.log(this.dict);
 
-        this.roomadmin.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
+        if (body.socketid == body.kicklist){
+          (maproom.get(body.room).delete(body.kicklist));
+          socket.leave(body.room);}
+        else
+        {
+
+        this.roomowner.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
                                                         (maproom.get(body.room).delete(body.kicklist))
                                                                 : console.log('pas de droit administrateur')
                                                                 console.log(maproom);
+                                                                let unaray = new Array;
+                                                                unaray.push(body.kicklist);
+                                                                this.server.in(body.kicklist).socketsLeave(body.room);
+                                                                /*
+                                                                this.server.emit('roomMove',{
+                                                                  listUser : this.listUserr,
+                                                                  roomlist : this.listRoom,
+                                                                  dicta : this.dict,
+                                                                  roomowner : this.roomowner
+                                                              });
+                                                              */
+        }
 
       });
 
-      
+
+                 /*********************** SET ADMIN EVENT  ************************/
+
+
+                 socket.on("setadmin" ,(body:any) =>{   
+                  if (this.roomowner.get(body.room) === body.socketid){
+                    if (this.roomadmin.get(body.room).indexOf(body.socketid) == -1)
+                      this.roomadmin.get(body.room).push(body.socketid);
+                  }
+                  console.log(this.roomadmin);
+
+
+                 });
+
 
                  /*********************** DISCONNECT  ************************/
 
@@ -178,7 +213,7 @@ export class MyGateway implements OnModuleInit {
         map.delete(key) 
         : null
       }
-      this.roomadmin.forEach(eraseadmin);
+      this.roomowner.forEach(eraseadmin);
 
       function eraseroompassword(value,key,map){
         maproom.has(key) ? null : map.delete(key)
@@ -186,7 +221,7 @@ export class MyGateway implements OnModuleInit {
       this.dict.forEach(eraseroompassword);
 
       console.log(maproom);
-      console.log(this.roomadmin);
+      console.log(this.roomowner);
       console.log(this.dict);
 
 
@@ -194,7 +229,7 @@ export class MyGateway implements OnModuleInit {
           listUser : this.listUserr,
           roomlist : this.listRoom,
           dict : this.dict,
-          roomadmin : this.roomadmin
+          roomowner : this.roomowner
         });
      
       });
