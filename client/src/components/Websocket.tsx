@@ -23,7 +23,7 @@ type UserPayload = {
   listUser : string[];
   roomlist: string[];
   roomowner: Map<string,string>;
-  dicta: Map<string,string>;
+  roompassworda: Map<string,string>;
   socket : any;
   mynewroom : string;
 };

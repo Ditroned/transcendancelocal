@@ -1,4 +1,4 @@
-import { ConsoleLogger, OnModuleInit } from '@nestjs/common';
+import { ConsoleLogger, NotAcceptableException, OnModuleInit } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -10,6 +10,7 @@ import { timingSafeEqual } from 'crypto';
 import { SocketAddress } from 'net';
 import { identity, map } from 'rxjs';
 import { Server, Socket} from 'socket.io';
+import { Client } from 'socket.io/dist/client';
 
 
 type UserPayload = {
@@ -21,7 +22,7 @@ type UserPayload = {
   inputpassword : string;
   roomowner : Map<string,string>;
   roomadmin : Map<string,string[]>;
-  dict : Map<string,string>;
+  roompassword : Map<string,string>;
 };
 
 
@@ -37,7 +38,8 @@ export class MyGateway implements OnModuleInit {
   public listRoom : string[] = [];
   public roomowner : Map<string,string> = new Map<string,string>;
   public roomadmin : Map<string,string[]> = new Map<string,string[]>;
-  public dict : Map<string,string> = new Map<string,string>;
+  public roompassword : Map<string,string> = new Map<string,string>;
+  
   
 
   abc = this.listRoom;
@@ -47,6 +49,34 @@ export class MyGateway implements OnModuleInit {
   
 
   onModuleInit() {
+
+    function checkSocket(socketid) {
+      return socketid !== this.socket.id;
+    }
+    function cleanMapSetSocket(value, key, map) {
+      value.filter(elem => elem !== this.socket.id)
+      map.get(key).size() === 0 ? map.delete(key) : null
+    }
+    function cleanMapStringSocket(value, key, map) {
+      value === this.socket.id ? map.delete(key) : null
+    }
+    function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid){
+      roomowner.get(room) === socketid ? roomowner.delete(room) : null
+      //let roomadmintemp = new Array();
+      //roomadmintemp = roomadmin.get(room).filter(elem => elem !== socketid);
+      //roomadmintemp.length > 0 ? roomadmin.set(room, roomadminttemp) : roomadmin.delete(room)
+      let setmaproomtemp = [];
+      let values = Object.values(maproom.get(room));
+      setmaproomtemp = values.filter(elem => elem !== socketid);
+      //setmaproomtemp = maproom.get(room).filter(elem => elem !== socketid);
+      setmaproomtemp.length > 0 ? maproom.set(room, setmaproomtemp) : (maproom.delete(room),roompassword.delete(room))
+    }
+    function leaveAndClean(room,roomowner,roomadmin,roompassword,maproom){
+      roomowner.forEach(cleanMapStringSocket);
+      roomadmin.forEach(cleanMapSetSocket);
+
+      roompassword.forEach(cleanMapSetSocket);
+    }
 
                        /* INITALIZATION  */
 
@@ -78,9 +108,12 @@ export class MyGateway implements OnModuleInit {
       this.server.emit('connected',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
-        dict : this.dict,
+        roompassword : this.roompassword,
         roomowner : this.roomowner
       });
+      console.log(maproom);
+      console.log(this.roomowner);
+      console.log(this.roompassword);
 
 
 
@@ -92,7 +125,7 @@ export class MyGateway implements OnModuleInit {
       socket.on("joinRoom", (userinfo: UserPayload) => {
 
         maproom.has(userinfo.room) ? 
-          (this.dict.get(userinfo.room) === userinfo.inputpassword) ?
+          (this.roompassword.get(userinfo.room) === userinfo.inputpassword) ?
 
 
             maproom.has(userinfo.room) ? 
@@ -109,7 +142,7 @@ export class MyGateway implements OnModuleInit {
           maproom.has(userinfo.room) ? 
           ((maproom.get(userinfo.room).has(socket.id)) ?  null : maproom.get(userinfo.room).add(socket.id))
           :
-          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.dict.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id))
+          (maproom.set(userinfo.room,new Set<string>),maproom.get(userinfo.room).add(socket.id),this.roompassword.set(userinfo.room,userinfo.inputpassword),this.roomowner.set(userinfo.room,socket.id))
         
 //seulement si tout ok , alors on join et leave ... sinon wtf!!!
         for (let key of maproom.keys()) {
@@ -120,14 +153,23 @@ export class MyGateway implements OnModuleInit {
       socket.leave(userinfo.oldroom);
       console.log(userinfo.oldroom);
        let babar = new Map();
-       babar = this.dict;
+       babar = this.roompassword;
        this.server.to(socket.id).emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
-        dicta : this.dict,
+        roompassworda : this.roompassword,
         roomowner : this.roomowner,
         mynewroom : userinfo.room,
     });
+    this.server.emit('connected',{
+      listUser : this.listUserr,
+      roomlist : this.listRoom,
+      roompassword : this.roompassword,
+      roomowner : this.roomowner
+    });
+    console.log(maproom);
+      console.log(this.roomowner);
+      console.log(this.roompassword);
       });
 
 
@@ -139,24 +181,45 @@ export class MyGateway implements OnModuleInit {
       socket.on("kickevent" ,(body:any) =>{
         console.log(body.socketid);
         console.log(this.roomowner);
-        console.log(this.dict);
+        console.log(this.roompassword);
+        //console.log(Client.name);
 
+        let socketid = body.socketid;
+
+        leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,body.socketid);
+        console.log(maproom);
+      console.log(this.roomowner);
+      console.log(this.roompassword);
+      
+
+        /*
         if (body.socketid == body.kicklist){
           (maproom.get(body.room).delete(body.kicklist));
-          socket.leave(body.room);}
-        else
-        {
+          socket.leave(body.room);
+        if (maproom.get(body.room).size === 0){
+              maproom.delete(body.room);
+              this.roomowner.delete(body.room);
+              this.roompassword.delete(body.room);
+            }}
+            */
 
+
+       // else
+        //{
+
+
+        /*
         this.roomowner.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
                                                         (maproom.get(body.room).delete(body.kicklist),console.log('oui'),this.server.in(body.kicklist).socketsLeave(body.room),
                                                         this.server.in(body.kicklist).emit('roomMove',{
                                                           listUser : this.listUserr,
                                                           roomlist : this.listRoom,
-                                                          dicta : this.dict,
+                                                          roompassworda : this.roompassword,
                                                           roomowner : this.roomowner,
                                                           mynewroom : undefined
                                                       }))
                                                                 : console.log('pas de droit administrateur')
+                                                                */
 /*
       console.log(maproom);
       let unaray = new Array;
@@ -166,13 +229,14 @@ export class MyGateway implements OnModuleInit {
       this.server.in(body.kicklist).emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
-        dicta : this.dict,
+        roompassworda : this.roompassword,
         roomowner : this.roomowner,
         mynewroom : undefined
     });
     */
                                                               
-        }
+        //}
+        
 
       });
 
@@ -231,17 +295,15 @@ export class MyGateway implements OnModuleInit {
       function eraseroompassword(value,key,map){
         maproom.has(key) ? null : map.delete(key)
       }
-      this.dict.forEach(eraseroompassword);
+      this.roompassword.forEach(eraseroompassword);
 
-      console.log(maproom);
-      console.log(this.roomowner);
-      console.log(this.dict);
+
 
 
         this.server.emit('connected',{
           listUser : this.listUserr,
           roomlist : this.listRoom,
-          dict : this.dict,
+          roompassword : this.roompassword,
           roomowner : this.roomowner
         });
      
