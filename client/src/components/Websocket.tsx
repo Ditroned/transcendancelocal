@@ -63,6 +63,9 @@ export const Websocket = () => {
     });
     socket.on('forceleaveroom', (body:any) => {
       let socketid = socket.id;
+      console.log('jesuisforcedeleave');
+      setOldroom(room);
+      setRoom('joinroomname');
       socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
   });
   
@@ -80,7 +83,7 @@ export const Websocket = () => {
       
       setUsers((prev) => [...prev, newUser]);
       console.log(oldroom);
-      setOldroom(room);
+      setOldroom(oldroom);
       setRoom(newUser.mynewroom);
       console.log(room);
       setValue(newUser.mynewroom);

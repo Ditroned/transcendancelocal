@@ -65,29 +65,15 @@ export class MyGateway implements OnModuleInit {
     }
     function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid,socket,server,listRoom,listUserr){
       roomowner.get(room) === socketid ? roomowner.delete(room) : null
-      //let roomadmintemp = new Array();
-      //roomadmintemp = roomadmin.get(room).filter(elem => elem !== socketid);
-      //roomadmintemp.length > 0 ? roomadmin.set(room, roomadminttemp) : roomadmin.delete(room)
-      //let setmaproomtemp = [];
-      //let values = Object.values(maproom.get(room));
-      //setmaproomtemp = values.filter(elem => elem !== socketid);
       maproom.get(room).forEach(elem => { if (elem === socketid) {maproom.get(room).delete(socketid);}});
       maproom.get(room).size > 0 ? null : (maproom.delete(room),roompassword.delete(room))
-
-      //console.log(maproom.get(room));
-      //setmaproomtemp = maproom.get(room).filter(elem => elem !== socketid);
-      //setmaproomtemp.length > 0 ? maproom.set(room, setmaproomtemp) : (maproom.delete(room),roompassword.delete(room))
       for (var i = 0; i < listRoom.length + 5;i++) {
         listRoom.pop()
       }
       for (let key of maproom.keys()) {
         listRoom.lastIndexOf(key) === -1 ? listRoom.push(key) : null;
     }
-      //this.server.socketsLeave(room);
 
-
-      //socket.leave(room);
-      
       server.to(socketid).emit('roomMove',{
         listUser : listUserr,
         roomlist : listRoom,
@@ -102,14 +88,8 @@ export class MyGateway implements OnModuleInit {
         roompassword : roompassword,
         roomowner : roomowner
       });
-
     }
-    function leaveAndClean(room,roomowner,roomadmin,roompassword,maproom){
-      roomowner.forEach(cleanMapStringSocket);
-      roomadmin.forEach(cleanMapSetSocket);
 
-      roompassword.forEach(cleanMapSetSocket);
-    }
 
                        /* INITALIZATION  */
 
@@ -183,6 +163,8 @@ export class MyGateway implements OnModuleInit {
       }
 
       if (success === 1){
+       console.log('ici');
+       socket.leave("joinroomname");
        this.server.to(socket.id).emit('roomMove',{
         listUser : this.listUserr,
         roomlist : this.listRoom,
@@ -227,6 +209,9 @@ export class MyGateway implements OnModuleInit {
         }
       console.log(maproom);console.log(this.roomowner);console.log(this.roompassword);
       this.server.to(body.kicklist).emit('forceleaveroom');
+      this.server.in(body.kicklist).emit('leavecurrentroom')
+      //console.log(this.server.sockets.adapter.socketRooms);
+      this.server.in(body.kicklist).socketsLeave(body.room);
       
      //console.log(body.socketid);
      //console.log(body.kicklist);
@@ -338,7 +323,7 @@ export class MyGateway implements OnModuleInit {
   onJoinRoom(@ConnectedSocket() client: Socket,
   @MessageBody() body: any,
   ) {
-    
+    /*
     client.leave(body.oldroom);
     client.join(body.room);
     for (var i = 0; i < this.listRoom.length;i++) {
@@ -352,6 +337,8 @@ export class MyGateway implements OnModuleInit {
       (key === value.values().next().value) ?
       key : (mamap.set(key,value))
     }
+    */
   }
+  
   
 }
