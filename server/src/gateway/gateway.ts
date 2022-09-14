@@ -85,12 +85,15 @@ export class MyGateway implements OnModuleInit {
     }
       //this.server.socketsLeave(room);
 
-      socket.leave(room);
+
+      //socket.leave(room);
+      
       server.to(socketid).emit('roomMove',{
         listUser : listUserr,
         roomlist : listRoom,
         roompassworda : roompassword,
         roomowner : roomowner,
+        oldroom : room,
         mynewroom : 'joinroomname',
     });
       server.emit('connected',{
@@ -205,66 +208,28 @@ export class MyGateway implements OnModuleInit {
 //if bug and socket anonymous then serv crash
 
 
-      socket.on("kickevent" ,(body:any) =>{
-        //console.log(body.socketid);
-        //console.log(this.roomowner);
-        //console.log(this.roompassword);
-        //console.log(Client.name);
-
+      socket.on("leavecurrentroom" ,(body:any) =>{
         let socketid = body.socketid;
-
         leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,body.socketid,socket,this.server,this.listRoom,this.listUserr);
-        console.log(maproom);
-      console.log(this.roomowner);
-      console.log(this.roompassword);
+      console.log(maproom);console.log(this.roomowner);console.log(this.roompassword);
+      console.log(body.room);
+      socket.leave(body.room);
+      socket.join('joinroomname');
+      });
+
+      socket.on("kickevent" ,(body:any) =>{
+        //this.roomadmin.get(body.room).indexOf(body.socketid) !== -1 || 
+        let room = body.room;
+        let socketid = body.kicklist;
+        if ((this.roomowner.get(body.room) !== body.kicklist)){      
+          console.log('reussite kick');
+          leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,socketid,socket,this.server,this.listRoom,this.listUserr);
+        }
+      console.log(maproom);console.log(this.roomowner);console.log(this.roompassword);
+      this.server.to(body.kicklist).emit('forceleaveroom');
       
-
-        /*
-        if (body.socketid == body.kicklist){
-          (maproom.get(body.room).delete(body.kicklist));
-          socket.leave(body.room);
-        if (maproom.get(body.room).size === 0){
-              maproom.delete(body.room);
-              this.roomowner.delete(body.room);
-              this.roompassword.delete(body.room);
-            }}
-            */
-
-
-       // else
-        //{
-
-
-        /*
-        this.roomowner.get(body.room) === body.socketid ? body.socketid === body.kicklist ? null :
-                                                        (maproom.get(body.room).delete(body.kicklist),console.log('oui'),this.server.in(body.kicklist).socketsLeave(body.room),
-                                                        this.server.in(body.kicklist).emit('roomMove',{
-                                                          listUser : this.listUserr,
-                                                          roomlist : this.listRoom,
-                                                          roompassworda : this.roompassword,
-                                                          roomowner : this.roomowner,
-                                                          mynewroom : undefined
-                                                      }))
-                                                                : console.log('pas de droit administrateur')
-                                                                */
-/*
-      console.log(maproom);
-      let unaray = new Array;
-      unaray.push(body.kicklist);
-      this.server.in(body.kicklist).socketsLeave(body.room);
-      
-      this.server.in(body.kicklist).emit('roomMove',{
-        listUser : this.listUserr,
-        roomlist : this.listRoom,
-        roompassworda : this.roompassword,
-        roomowner : this.roomowner,
-        mynewroom : undefined
-    });
-    */
-                                                              
-        //}
-        
-
+     //console.log(body.socketid);
+     //console.log(body.kicklist);
       });
 
 

@@ -9,6 +9,7 @@ import { Tracing } from 'trace_events';
 import { StringMappingType, TypePredicateKind } from 'typescript';
 import { WebsocketContext } from '../contexts/WebsocketContext';
 import { setEngine } from 'crypto';
+import { Server } from 'http';
 
 type MessagePayload = {
   content: string;
@@ -60,15 +61,31 @@ export const Websocket = () => {
       console.log('onMessage event received!');
       listMute.indexOf(newMessage.socketid) === -1 ? (setMessages((prev) => [...prev, newMessage])) : console.log('user mute')
     });
+    socket.on('forceleaveroom', (body:any) => {
+      let socketid = socket.id;
+      socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
+  });
+  
+    const onLeaveCurrentRoom = () => {
+      console.log(room);
+      let socketid = socket.id;
+      if (kicklist == socketid)
+        setRoom('');
+      socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
+    }
     
     
     socket.on('roomMove', (newUser: UserPayload)  => {
       console.log(newUser);
+      
       setUsers((prev) => [...prev, newUser]);
       console.log(oldroom);
       setOldroom(room);
       setRoom(newUser.mynewroom);
       console.log(room);
+      setValue(newUser.mynewroom);
+      setRoom(newUser.mynewroom);
+      joinRoom();
       //setOldroom(room);
       //setRoom(newUser.mynewroom);
       /*
@@ -94,8 +111,17 @@ export const Websocket = () => {
     setValue('');
   }
 
-  const onKick = () => {
+  const onLeaveCurrentRoom = () => {
     console.log(room);
+    let socketid = socket.id;
+    if (kicklist == socketid)
+      setRoom('');
+    socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
+  }
+
+
+  const onKick = () => {
+    console.log(dmreceiver);
     let socketid = socket.id;
     if (kicklist == socketid)
       setRoom('');
@@ -158,6 +184,14 @@ const onSetAdmin = () => {
   function f1(){  
     alert(value);
 }
+function fonKick(body:any){
+    let socketid = socket.id;
+    let kicklist = body;
+    if (body == socketid)
+      setRoom('');
+    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+  }
+
 
 
 
@@ -194,7 +228,8 @@ const onSetAdmin = () => {
                   {users[users.length - 1].listUser.map((user) => (
                     <div>
                   {user}<input type='button' value='Mute' onClick={(e) => [(listMute.indexOf(user) === -1 ? (setListMute((prev) => [...prev,user]),clickMute()) : setListMute(listMute.filter(muted => muted != user))),console.log(listMute)]} />
-                  <button onClick={(event) => [setKickList(''),setKickList(user),onKick()]}> Kick</button>
+                  <button onClick={(event) => [setKickList(''),setKickList(user),onLeaveCurrentRoom()]}> Leave current room</button>
+                  <button value={user} onClick={(e) => {fonKick(e.currentTarget.value)}}> kick</button>
         
         
         <button onClick={joinRoom}> Play Pong</button>
