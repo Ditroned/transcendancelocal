@@ -190,9 +190,9 @@ const onSetAdmin = () => {
 function fonKick(body:any){
     let socketid = socket.id;
     let kicklist = body;
-    if (body == socketid)
+    if (body == socketid){
       setRoom('');
-    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});}
   }
 
 
