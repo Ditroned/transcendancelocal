@@ -34,6 +34,7 @@ export const Websocket = () => {
   const [messages, setMessages] = useState<MessagePayload[]>([]);
   const [users, setUsers] = useState<UserPayload[]>([]);
   const [listMute, setListMute] = useState<string[]>([]);
+  const [listroomimmuted, setlistroomimmuted] = useState<string[]>([]);
   //const listMute : string[] = [];
   //const [RoomList, setRoomList] = useState<RoomPayload[]>([]);
   const [room, setRoom] = useState('joinroomname');
@@ -43,6 +44,7 @@ export const Websocket = () => {
   const [inputpassword, setInputpassword] = useState('');
   const [kicklist, setKickList] = useState('');
   const [dmreceiver, setDmreceiver] = useState('');
+  const testlist : any = [];
 
   const listderoom = useState(new Map<string,Set<string>>);
 
@@ -76,6 +78,10 @@ export const Websocket = () => {
         setRoom('');
       socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
     }
+    socket.on('mutedfromroom', (body:any) => {
+      console.log('on essai de me mute');
+      setmylistroom(body);
+    });
     
     
     socket.on('roomMove', (newUser: UserPayload)  => {
@@ -107,7 +113,8 @@ export const Websocket = () => {
 
   const onSubmit = () => {
     let socketid = socket.id;
-    if (value.length > 0)
+    console.log(listroomimmuted);
+    if (value.length > 0 && listroomimmuted.indexOf(room) === -1)
       socket.emit('newMessage', {value, socketid, oldroom, room, listMute});
 
     setCount(count + 1);
@@ -121,6 +128,7 @@ export const Websocket = () => {
       setRoom('');
     socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
   }
+
 
 
   const onKick = () => {
@@ -195,7 +203,41 @@ function fonKick(body:any){
     socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});}
   }
 
+  function setmylistroom(body:string){
+    const newlistroomimmuted = listroomimmuted;
+    if (newlistroomimmuted.indexOf(body) === -1){
+      newlistroomimmuted.push(body);
+      setlistroomimmuted(newlistroomimmuted);
+    }else{
+      newlistroomimmuted.length === 1 ? setlistroomimmuted([]) :newlistroomimmuted.filter(elem=>elem !== body);
+    }
+    
+    let c = listMute.length;
+    //setlistroomimmuted(listroomimmuted.filter(elem => elem !== body));
+    let d = listMute.length;
+    //if (c === d) 
+    //setlistroomimmuted(prev => listroomimmuted.push(body));
+    /*
+    console.log(body);
+    console.log(listroomimmuted.indexOf(body));
+    let b : string = body;
+    if (listroomimmuted.indexOf(b) == -1)
+      {
+        console.log('a');
+      setlistroomimmuted((prev) => [...prev, body]);}
+      else{
+        console.log('b');
+        setlistroomimmuted(listroomimmuted.filter(elem => elem !== body));
+      }
+      */
 
+  }
+  function muteAsAdmin(body:any){
+    console.log('try tomute as admin');
+    let socketid = socket.id;
+    let adminmutelist = body;
+    socket.emit('muteadminevent',{value, socketid, oldroom, room, listMute,adminmutelist});}
+  
 
 
 
@@ -244,7 +286,7 @@ function fonKick(body:any){
             onChange={(e) => [setValue(e.target.value),setDmreceiver(user)]}
           />
       <button onClick={() => [[setDmreceiver(user)],[onPrivatemessage()]]}> Send</button>
-      <button onClick={joinRoom}> Mute as admin</button>
+      <button value={user} onClick={(e) => {muteAsAdmin(e.currentTarget.value)}}> Mute as admin</button>
       <button onClick={joinRoom}> Ban as admin</button>
       <button onClick={(event) => [setDmreceiver(user),onSetAdmin()]}> Set admin</button>
       <button onClick={joinRoom}> PW change</button>
