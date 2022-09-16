@@ -235,9 +235,14 @@ export class MyGateway implements OnModuleInit {
                   this.server.in(body.kicklist).socketsLeave(body.room);
 
                   //je rajoute la partie ban
-                  const datefromban = Date.now();
+                  console.log('jessaideban');
                   let secondfromban = body.bantime;
                     let banroom = body.room;
+                    let datefromban = Date.now();
+
+                    //this.server.to(body.kicklist).emit('banfromserver');
+
+                    //socket.to(body.kicklist).emit('banfromserver',{banroom,secondfromban});
                   this.server.to(body.kicklist).emit('banfromserver',{banroom,datefromban,secondfromban});
 
                   });

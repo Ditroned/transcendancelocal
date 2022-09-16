@@ -58,26 +58,23 @@ export const Websocket = () => {
       
     });
     socket.on('connected', (newUser: UserPayload) => {
-      console.log(newUser);
       setUsers((prev) => [...prev, newUser]);        
     });
     socket.on('onMessage', (newMessage: MessagePayload) => {
-      console.log('onMessage event received!');
       listMute.indexOf(newMessage.socketid) === -1 ? (setMessages((prev) => [...prev, newMessage])) : console.log('user mute')
     });
     socket.on('forceleaveroom', (body:any) => {
       let socketid = socket.id;
-      console.log('jesuisforcedeleave');
       setOldroom(room);
       setRoom('joinroomname');
       socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
   });
   socket.on('banfromserver', (body:any) => {
-    setlistroomimban((prev) => [...prev, body.banroom]);
+    console.log(body.banroom);
+    setlistroomimban(body.banroom);
 });
   
     const onLeaveCurrentRoom = () => {
-      console.log(room);
       let socketid = socket.id;
       if (kicklist == socketid)
         setRoom('');
@@ -93,10 +90,8 @@ export const Websocket = () => {
       console.log(newUser);
       
       setUsers((prev) => [...prev, newUser]);
-      console.log(oldroom);
       setOldroom(oldroom);
       setRoom(newUser.mynewroom);
-      console.log(room);
       setValue(newUser.mynewroom);
       setRoom(newUser.mynewroom);
       joinRoom();
@@ -118,7 +113,6 @@ export const Websocket = () => {
 
   const onSubmit = () => {
     let socketid = socket.id;
-    console.log(listroomimmuted);
     if (value.length > 0 && listroomimmuted.indexOf(room) === -1)
       socket.emit('newMessage', {value, socketid, oldroom, room, listMute});
 
@@ -127,7 +121,6 @@ export const Websocket = () => {
   }
 
   const onLeaveCurrentRoom = () => {
-    console.log(room);
     let socketid = socket.id;
     if (kicklist == socketid)
       setRoom('');
@@ -137,7 +130,6 @@ export const Websocket = () => {
 
 
   const onKick = () => {
-    console.log(dmreceiver);
     let socketid = socket.id;
     if (kicklist == socketid)
       setRoom('');
@@ -145,8 +137,7 @@ export const Websocket = () => {
   }
 
   const onPrivatemessage = () => {
-    let socketid = socket.id;
-    console.log('id du destinataire ' + dmreceiver);
+    let socketid = socket.id;;
     if (value.length > 0 )
     {
     socket.emit("private message", {
@@ -164,8 +155,6 @@ export const Websocket = () => {
 const onSetAdmin = () => {
   let socketid = socket.id;
   let selecteduser = dmreceiver;
-  console.log(dmreceiver);
-  console.log('jessai de setupadmin');
   if (value !== socketid){
   socket.emit('setadmin',{
     socketid,
@@ -177,8 +166,9 @@ const onSetAdmin = () => {
   
 
   const joinRoom = () => {
-    if (listroomimban.indexOf(value) === -1)
-    {
+    console.log(listroomimban);
+    if (listroomimban.indexOf(value) === -1) {
+    
       console.log('c koi cette value mdr ' + value);
     if (room !== "") {
       let mamamia = socket.id;
@@ -192,11 +182,9 @@ const onSetAdmin = () => {
         inputpassword
       })
 
-    }
-    }
-    else{
-      console.log('je ne peux pas rentrer car je suis ban');
-    }
+    }}
+    if (listroomimban.indexOf(value) !== -1) 
+      console.log('je ne peux pas rentrer car je suis ban');    
   };
 
   const clickMute = () => {
