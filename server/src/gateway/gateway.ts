@@ -202,6 +202,7 @@ export class MyGateway implements OnModuleInit {
       socket.on("kickevent" ,(body:any) =>{
         //this.roomadmin.get(body.room).indexOf(body.socketid) !== -1 || 
         let room = body.room;
+        console.log('try kick');
         let socketid = body.kicklist;
         if ((this.roomowner.get(body.room) !== body.kicklist)){      
           console.log('reussite kick');
@@ -216,6 +217,31 @@ export class MyGateway implements OnModuleInit {
      //console.log(body.socketid);
      //console.log(body.kicklist);
       });
+
+                   /*********************** BAN EVENT  ************************/
+
+                   socket.on("banevent" ,(body:any) =>{
+                    //this.roomadmin.get(body.room).indexOf(body.socketid) !== -1 || 
+                    let room = body.room;
+                    let socketid = body.kicklist;
+                    if ((this.roomowner.get(body.room) !== body.kicklist)){      
+                      console.log('reussite kick');
+                      leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,socketid,socket,this.server,this.listRoom,this.listUserr);
+                    }
+                  console.log(maproom);console.log(this.roomowner);console.log(this.roompassword);
+                  this.server.to(body.kicklist).emit('forceleaveroom');
+                  this.server.in(body.kicklist).emit('leavecurrentroom')
+                  //console.log(this.server.sockets.adapter.socketRooms);
+                  this.server.in(body.kicklist).socketsLeave(body.room);
+
+                  //je rajoute la partie ban
+                  const datefromban = Date.now();
+                  let secondfromban = body.bantime;
+                    let banroom = body.room;
+                  this.server.to(body.kicklist).emit('banfromserver',{banroom,datefromban,secondfromban});
+
+                  });
+
 
 
                  /*********************** SET ADMIN EVENT  ************************/

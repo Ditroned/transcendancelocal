@@ -44,7 +44,9 @@ export const Websocket = () => {
   const [inputpassword, setInputpassword] = useState('');
   const [kicklist, setKickList] = useState('');
   const [dmreceiver, setDmreceiver] = useState('');
+  const [bantime, setbantime] = useState(0);
   const testlist : any = [];
+  const [listroomimban, setlistroomimban] = useState<string[]>([]);
 
   const listderoom = useState(new Map<string,Set<string>>);
 
@@ -70,6 +72,9 @@ export const Websocket = () => {
       setRoom('joinroomname');
       socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
   });
+  socket.on('banfromserver', (body:any) => {
+    setlistroomimban((prev) => [...prev, body.banroom]);
+});
   
     const onLeaveCurrentRoom = () => {
       console.log(room);
@@ -172,6 +177,9 @@ const onSetAdmin = () => {
   
 
   const joinRoom = () => {
+    if (listroomimban.indexOf(value) === -1)
+    {
+      console.log('c koi cette value mdr ' + value);
     if (room !== "") {
       let mamamia = socket.id;
       let delvalue = value;
@@ -184,6 +192,10 @@ const onSetAdmin = () => {
         inputpassword
       })
 
+    }
+    }
+    else{
+      console.log('je ne peux pas rentrer car je suis ban');
     }
   };
 
@@ -198,9 +210,13 @@ const onSetAdmin = () => {
 function fonKick(body:any){
     let socketid = socket.id;
     let kicklist = body;
-    if (body == socketid){
-      setRoom('');
-    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});}
+    socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+  }
+
+  function fonBan(body:any){
+    let socketid = socket.id;
+    let kicklist = body;
+    socket.emit('banevent',{value, socketid, oldroom, room, listMute,kicklist,bantime});
   }
 
   function setmylistroom(body:string){
@@ -287,7 +303,7 @@ function fonKick(body:any){
           />
       <button onClick={() => [[setDmreceiver(user)],[onPrivatemessage()]]}> Send</button>
       <button value={user} onClick={(e) => {muteAsAdmin(e.currentTarget.value)}}> Mute as admin</button>
-      <button onClick={joinRoom}> Ban as admin</button>
+      <button value={user} onClick={(e) => {fonBan(e.currentTarget.value)}}> Ban as admin</button>
       <button onClick={(event) => [setDmreceiver(user),onSetAdmin()]}> Set admin</button>
       <button onClick={joinRoom}> PW change</button>
                   <div>
