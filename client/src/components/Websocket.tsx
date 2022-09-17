@@ -327,6 +327,13 @@ function fonKick(body:any){
     let socketid = socket.id;
     let adminmutelist = body;
     socket.emit('muteadminevent',{value, socketid, oldroom, room, listMute,adminmutelist});}
+
+    const changePw = () => {
+      let socketid = socket.id;
+      let newpw = value;
+      socket.emit('changepw',{newpw, socketid,room});
+    }
+      
   
 
 
@@ -379,7 +386,13 @@ function fonKick(body:any){
       <button value={user} onClick={(e) => {muteAsAdmin(e.currentTarget.value)}}> Mute as admin</button>
       <button value={user} onClick={(e) => {fonBan(e.currentTarget.value)}}> Ban as admin</button>
       <button value={user} onClick={(e) => [seterdudm(e.currentTarget.value)]}> Set admin</button>
-      <button onClick={joinRoom}> PW change</button>
+      <input
+            placeholder="new PW"
+            type="text"
+            value={value}
+            onChange={(e) => [setValue(e.target.value)]}
+          />
+      <button onClick={changePw}> PW change</button>
                   <div>
 
         

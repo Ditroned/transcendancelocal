@@ -301,6 +301,19 @@ export class MyGateway implements OnModuleInit {
                     }
                     });
 
+                    /*********************** CHANGE PASSWORD  ************************/
+
+                    socket.on('changepw', (body:any) =>{
+                      if (this.roomowner.get(body.room) == body.socketid)
+                      {
+                        this.roompassword.set(body.room,body.newpw);
+                      }
+                      else
+                      {
+                        console.log('No Admin rights to change Password');
+                      }
+                    });
+
 
 
                  /*********************** DISCONNECT  ************************/
