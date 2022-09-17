@@ -98,14 +98,22 @@ export const Websocket = () => {
 
 });
     socket.on('mutedfromroom', (body:any) => {
-      console.log('on essai de me mute');
-      setmylistroom(body.room);
-      const datemuted = Date.now();
-      let cpy = new Map();
-      cpy.set('datemute',datemuted);
-      cpy.set('dureemute', body.tempdemute);
-      let temp = storemutetemp;
-      temp.set(body.room,cpy);
+      if (body.tempdemute !== -1){
+          console.log('on essai de me mute');
+          setmylistroom(body.room);
+          const datemuted = Date.now();
+          let cpy = new Map();
+          cpy.set('datemute',datemuted);
+          cpy.set('dureemute', body.tempdemute);
+          let temp = storemutetemp;
+          temp.set(body.room,cpy);
+          setstoremutetemp(temp);
+      }else{
+        let temp = storemutetemp;
+        temp.delete(body.room);
+        let listtemp = listroomimmuted.filter(elem => elem !== body.room);
+        setlistroomimmuted(listtemp);
+      }
     });
 
     socket.on('roomMove', (newUser: UserPayload)  => {
