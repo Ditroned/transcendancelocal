@@ -277,7 +277,8 @@ export class MyGateway implements OnModuleInit {
                       let tempdemute = 30;
                       console.log('jesuisownderdumuteevent');
                       console.log('je veux mute' + body.adminmutelist);
-                      this.server.to(body.adminmutelist).emit('mutedfromroom',body.room);
+                      let room =body.room;
+                      this.server.to(body.adminmutelist).emit('mutedfromroom',{room,tempdemute});
                     }
                     });
 

@@ -99,7 +99,13 @@ export const Websocket = () => {
 });
     socket.on('mutedfromroom', (body:any) => {
       console.log('on essai de me mute');
-      setmylistroom(body);
+      setmylistroom(body.room);
+      const datemuted = Date.now();
+      let cpy = new Map();
+      cpy.set('datemute',datemuted);
+      cpy.set('dureemute', body.tempdemute);
+      let temp = storemutetemp;
+      temp.set(body.room,cpy);
     });
 
     socket.on('roomMove', (newUser: UserPayload)  => {
@@ -125,6 +131,23 @@ export const Websocket = () => {
     let socketid = socket.id;
     console.log(room);
     console.log(listroomimmuted);
+
+  if (listroomimmuted.indexOf(room) !== -1)
+  {
+    let nowdate = Date.now();
+    console.log((nowdate - storemutetemp.get(room).get('datemute'))/300);
+    if (nowdate - storemutetemp.get(room).get('datemute') >= (storemutetemp.get(room).get('dureemute')*300))
+    {
+      let tempunmute = storemutetemp;
+      tempunmute.delete(room);
+      setstoremutetemp(tempunmute);
+
+      const templistunmute = listroomimmuted.filter(elem => elem !== room);
+      setlistroomimmuted(templistunmute);
+    }
+  }
+  
+
     if (value.length > 0 && listroomimmuted.indexOf(room) === -1)
       socket.emit('newMessage', {value, socketid, oldroom, room, listMute});
 
