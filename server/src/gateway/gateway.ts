@@ -67,7 +67,7 @@ export class MyGateway implements OnModuleInit {
     function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid,socket,server,listRoom,listUserr){
       roomowner.get(room) === socketid ? roomowner.delete(room) : null
       maproom.get(room).forEach(elem => { if (elem === socketid) {maproom.get(room).delete(socketid);}});
-      maproom.get(room).size > 0 ? null : (maproom.delete(room),roompassword.delete(room))
+      maproom.get(room).size > 0 ? null : (maproom.delete(room),roompassword.delete(room),roomadmin.delete(room))
       for (var i = 0; i < listRoom.length + 5;i++) {
         listRoom.pop()
       }
@@ -259,32 +259,30 @@ export class MyGateway implements OnModuleInit {
 
                  socket.on("setadmin" ,(body:any) =>{   
                   
-                  
                   if (this.roomowner.get(body.room) === body.socketid)
                   {
                             if (this.roomadmin.has(body.room))
                             {
-                                          if (this.roomadmin.get(body.room).has(body.socketid))
+                                          if (this.roomadmin.get(body.room).has(body.selecteduser))
                                           {
-                                              this.roomadmin.get(body.room).delete(body.socketid);
+                                              this.roomadmin.get(body.room).delete(body.selecteduser);
+                                              if (this.roomadmin.get(body.room).size === 0)
+                                              {
+                                                    this.roomadmin.delete(body.room);
+                                              }
                                           }
                                           else
                                           {
-                                            this.roomadmin.get(body.room).add(body.socketid);
+                                            this.roomadmin.get(body.room).add(body.selecteduser);
                                           }
                             }
                             else
                             {
                               let adminname = new Set<string>;
-                              adminname.add(body.socketid);
+                              adminname.add(body.selecteduser);
                               this.roomadmin.set(body.room,adminname);
                             }
                   }
-
-                  console.log(this.roomadmin);
-                  
-
-
                  });
 
 

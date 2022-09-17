@@ -273,6 +273,19 @@ function fonKick(body:any){
     socket.emit('banevent',{value, socketid, oldroom, room, listMute,kicklist,bantime});
   }
 
+  function seterdudm(body:any){
+    setDmreceiver(body);
+    let socketid = socket.id;
+    let selecteduser = body;
+    if (value !== socketid){
+    socket.emit('setadmin',{
+    socketid,
+    room,
+    selecteduser
+    })
+  }
+  }
+
   function setmylistroom(body:string){
     const newlistroomimmuted = listroomimmuted;
     if (newlistroomimmuted.indexOf(body) === -1){
@@ -365,7 +378,7 @@ function fonKick(body:any){
       <button onClick={() => [[setDmreceiver(user)],[onPrivatemessage()]]}> Send</button>
       <button value={user} onClick={(e) => {muteAsAdmin(e.currentTarget.value)}}> Mute as admin</button>
       <button value={user} onClick={(e) => {fonBan(e.currentTarget.value)}}> Ban as admin</button>
-      <button onClick={(event) => [setDmreceiver(user),onSetAdmin()]}> Set admin</button>
+      <button value={user} onClick={(e) => [seterdudm(e.currentTarget.value)]}> Set admin</button>
       <button onClick={joinRoom}> PW change</button>
                   <div>
 
