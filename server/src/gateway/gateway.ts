@@ -6,6 +6,7 @@ import {
   WebSocketServer,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { RedisSearchLanguages } from '@redis/search/dist/commands';
 import { timingSafeEqual } from 'crypto';
 import { SocketAddress } from 'net';
 import { identity, map } from 'rxjs';
@@ -22,7 +23,7 @@ type UserPayload = {
   Ulistroom : string[];
   inputpassword : string;
   roomowner : Map<string,string>;
-  roomadmin : Map<string,string[]>;
+  roomadmin : Map<string,Set<string>>;
   roompassword : Map<string,string>;
 };
 
@@ -38,7 +39,7 @@ export class MyGateway implements OnModuleInit {
   public listUserr : string[] = [];
   public listRoom : string[] = [];
   public roomowner : Map<string,string> = new Map<string,string>;
-  public roomadmin : Map<string,string[]> = new Map<string,string[]>;
+  public roomadmin : Map<string,Set<string>> = new Map<string,Set<string>>;
   public roompassword : Map<string,string> = new Map<string,string>;
   
   
@@ -257,11 +258,31 @@ export class MyGateway implements OnModuleInit {
 
 
                  socket.on("setadmin" ,(body:any) =>{   
-                  if (this.roomowner.get(body.room) === body.socketid){
-                    if (this.roomadmin.get(body.room).indexOf(body.socketid) == -1)
-                      this.roomadmin.get(body.room).push(body.socketid);
+                  
+                  
+                  if (this.roomowner.get(body.room) === body.socketid)
+                  {
+                            if (this.roomadmin.has(body.room))
+                            {
+                                          if (this.roomadmin.get(body.room).has(body.socketid))
+                                          {
+                                              this.roomadmin.get(body.room).delete(body.socketid);
+                                          }
+                                          else
+                                          {
+                                            this.roomadmin.get(body.room).add(body.socketid);
+                                          }
+                            }
+                            else
+                            {
+                              let adminname = new Set<string>;
+                              adminname.add(body.socketid);
+                              this.roomadmin.set(body.room,adminname);
+                            }
                   }
+
                   console.log(this.roomadmin);
+                  
 
 
                  });
@@ -274,7 +295,7 @@ export class MyGateway implements OnModuleInit {
                     
                     console.log('jesuisdansmuteevent');
                     if (this.roomowner.get(body.room) === body.socketid){
-                      let tempdemute = -1;
+                      let tempdemute = 30;
                       console.log('jesuisownderdumuteevent');
                       console.log('je veux mute' + body.adminmutelist);
                       let room =body.room;
