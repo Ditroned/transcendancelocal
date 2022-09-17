@@ -71,21 +71,17 @@ export const Websocket = () => {
   });
   socket.on('banfromserver', (body:any) => {
     console.log(body.banroom);
-    setlistroomimban(body.banroom);
+    let currentban = listroomimban;
+    currentban.push(body.banroom);
+    setlistroomimban(currentban);
+    console.log(listroomimban);
+    console.log(currentban);
 });
-  
-    const onLeaveCurrentRoom = () => {
-      let socketid = socket.id;
-      if (kicklist == socketid)
-        setRoom('');
-      socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
-    }
     socket.on('mutedfromroom', (body:any) => {
       console.log('on essai de me mute');
       setmylistroom(body);
     });
-    
-    
+
     socket.on('roomMove', (newUser: UserPayload)  => {
       console.log(newUser);
       
@@ -93,14 +89,8 @@ export const Websocket = () => {
       setOldroom(oldroom);
       setRoom(newUser.mynewroom);
       setValue(newUser.mynewroom);
-      setRoom(newUser.mynewroom);
-      joinRoom();
-      //setOldroom(room);
       //setRoom(newUser.mynewroom);
-      /*
-      if (newUser.mynewroom === undefined)
-        setRoom('');
-        */
+      //joinRoom();
       });
       
     return () => {
@@ -167,9 +157,10 @@ const onSetAdmin = () => {
 
   const joinRoom = () => {
     console.log(listroomimban);
-    if (listroomimban.indexOf(value) === -1) {
     
-      console.log('c koi cette value mdr ' + value);
+    if (listroomimban.indexOf(room) === -1) {
+    
+      console.log('je join la room : ' + room);
     if (room !== "") {
       let mamamia = socket.id;
       let delvalue = value;
@@ -182,10 +173,16 @@ const onSetAdmin = () => {
         inputpassword
       })
 
-    }}
-    if (listroomimban.indexOf(value) !== -1) 
-      console.log('je ne peux pas rentrer car je suis ban');    
-  };
+    }
+  }
+  
+    
+    if (listroomimban.indexOf(room) !== -1) 
+      console.log('je ne peux pas rentrer car je suis ban');
+      setRoom(oldroom);  
+  }
+  
+  ;
 
   const clickMute = () => {
     console.log(listMute);

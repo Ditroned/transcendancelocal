@@ -136,6 +136,7 @@ export class MyGateway implements OnModuleInit {
       
 
       socket.on("joinRoom", (userinfo: UserPayload) => {
+        console.log('jetapeunefoisici');
         let success = 0;
 
 
@@ -225,7 +226,7 @@ export class MyGateway implements OnModuleInit {
                     let room = body.room;
                     let socketid = body.kicklist;
                     if ((this.roomowner.get(body.room) !== body.kicklist)){      
-                      console.log('reussite kick');
+                      console.log('reussite kick de la room' + body.room);
                       leaveRoomEraseSocket(body.room,this.roomowner,this.roomadmin,this.roompassword,maproom,socketid,socket,this.server,this.listRoom,this.listUserr);
                     }
                   console.log(maproom);console.log(this.roomowner);console.log(this.roompassword);
@@ -235,7 +236,7 @@ export class MyGateway implements OnModuleInit {
                   this.server.in(body.kicklist).socketsLeave(body.room);
 
                   //je rajoute la partie ban
-                  console.log('jessaideban');
+                  console.log('jessaideban de la room suivante' + body.room);
                   let secondfromban = body.bantime;
                     let banroom = body.room;
                     let datefromban = Date.now();
