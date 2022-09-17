@@ -271,9 +271,12 @@ export class MyGateway implements OnModuleInit {
 
 
                   socket.on("muteadminevent" ,(body:any) =>{   
+                    
                     console.log('jesuisdansmuteevent');
                     if (this.roomowner.get(body.room) === body.socketid){
+                      let tempdemute = 30;
                       console.log('jesuisownderdumuteevent');
+                      console.log('je veux mute' + body.adminmutelist);
                       this.server.to(body.adminmutelist).emit('mutedfromroom',body.room);
                     }
                     });

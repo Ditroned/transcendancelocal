@@ -50,6 +50,7 @@ export const Websocket = () => {
 
   const listderoom = useState(new Map<string,Set<string>>);
   const [storebantemp, setstorebantemp] = useState<Map<any,any>>(new Map());
+  const [storemutetemp, setstoremutetemp] = useState<Map<any,any>>(new Map());
 
 
 
@@ -122,6 +123,8 @@ export const Websocket = () => {
 
   const onSubmit = () => {
     let socketid = socket.id;
+    console.log(room);
+    console.log(listroomimmuted);
     if (value.length > 0 && listroomimmuted.indexOf(room) === -1)
       socket.emit('newMessage', {value, socketid, oldroom, room, listMute});
 
@@ -244,9 +247,16 @@ function fonKick(body:any){
     if (newlistroomimmuted.indexOf(body) === -1){
       newlistroomimmuted.push(body);
       setlistroomimmuted(newlistroomimmuted);
-    }else{
+      console.log(newlistroomimmuted);
+      console.log(listroomimmuted);
+      console.log(body);
+      console.log('list de room im mute' + listroomimmuted);
+    }
+    /*
+    else{
       newlistroomimmuted.length === 1 ? setlistroomimmuted([]) :newlistroomimmuted.filter(elem=>elem !== body);
     }
+    */
     
     let c = listMute.length;
     //setlistroomimmuted(listroomimmuted.filter(elem => elem !== body));
