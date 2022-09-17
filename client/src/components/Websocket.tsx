@@ -49,6 +49,7 @@ export const Websocket = () => {
   const [listroomimban, setlistroomimban] = useState<string[]>([]);
 
   const listderoom = useState(new Map<string,Set<string>>);
+  const [storebantemp, setstorebantemp] = useState<Map<any,any>>(new Map());
 
 
 
@@ -75,7 +76,25 @@ export const Websocket = () => {
     currentban.push(body.banroom);
     setlistroomimban(currentban);
     console.log(listroomimban);
+    console.log(body.datefromban);
+    console.log(body.secondfromban);
     console.log(currentban);
+    const datebanned = Date.now();
+    let tempmap = new Map();
+    tempmap.set(body.banroom, new Map());
+    tempmap.get(body.banroom).set('dateban',datebanned);
+    tempmap.get(body.banroom).set('dureeban',body.secondfromban);
+    let cpy = storebantemp;
+    cpy.set(body.banroom,tempmap.get(body.banroom));
+    console.log(cpy.get(body.banroom));
+    setstorebantemp(cpy);
+
+    //tempmap.set(body.banrom,body.secondfromban);
+    console.log(tempmap);
+    console.log('baalors');
+
+    console.log(storebantemp);
+
 });
     socket.on('mutedfromroom', (body:any) => {
       console.log('on essai de me mute');
@@ -157,6 +176,22 @@ const onSetAdmin = () => {
 
   const joinRoom = () => {
     console.log(listroomimban);
+
+    if (listroomimban.indexOf(room) !== -1) {
+      let nowdate = Date.now();
+      console.log((nowdate - (storebantemp.get(room).get('dateban')))/300);
+      console.log((storebantemp.get(room).get('dureeban') ));
+      if (nowdate - storebantemp.get(room).get('dateban') >= (storebantemp.get(room).get('dureeban') * 300)){
+        console.log('jesuisdeban');
+        let tempunban = storebantemp;
+        tempunban.delete(room);
+        setstorebantemp(tempunban);
+        
+       const templistunban = listroomimban.filter(elem => elem !== room);
+       setlistroomimban(templistunban);
+
+    }
+  }
     
     if (listroomimban.indexOf(room) === -1) {
     

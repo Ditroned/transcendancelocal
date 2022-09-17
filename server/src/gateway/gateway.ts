@@ -237,9 +237,12 @@ export class MyGateway implements OnModuleInit {
 
                   //je rajoute la partie ban
                   console.log('jessaideban de la room suivante' + body.room);
-                  let secondfromban = body.bantime;
+                  //let secondfromban = body.bantime;
                     let banroom = body.room;
-                    let datefromban = Date.now();
+                    //const datefromban = new Date.now();
+                    const datefromban = Date.now();
+
+                    const secondfromban = 50;
 
                     //this.server.to(body.kicklist).emit('banfromserver');
 
