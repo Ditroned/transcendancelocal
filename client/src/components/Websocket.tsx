@@ -68,8 +68,9 @@ export const Websocket = () => {
     socket.on('forceleaveroom', (body:any) => {
       let socketid = socket.id;
       setOldroom(room);
+      let myoldroom = room;
       setRoom('joinroomname');
-      socket.emit('leavecurrentroom',{value, socketid, oldroom, room, listMute,kicklist});
+      socket.emit('leavecurrentroom',{value, socketid, myoldroom, room, listMute,kicklist});
   });
   socket.on('banfromserver', (body:any) => {
     console.log(body.banroom);
@@ -264,13 +265,27 @@ const onSetAdmin = () => {
 function fonKick(body:any){
     let socketid = socket.id;
     let kicklist = body;
+    if (socketid === body)
+    {
+      console.log('cant kick yourself');
+    }
+    else
+    {
     socket.emit('kickevent',{value, socketid, oldroom, room, listMute,kicklist});
+    }
   }
 
   function fonBan(body:any){
     let socketid = socket.id;
     let kicklist = body;
+    if (socketid === body)
+    {
+      console.log('can t ban yourself');
+    }
+    else
+    {
     socket.emit('banevent',{value, socketid, oldroom, room, listMute,kicklist,bantime});
+    }
   }
 
   function seterdudm(body:any){
@@ -326,7 +341,11 @@ function fonKick(body:any){
     console.log('try tomute as admin');
     let socketid = socket.id;
     let adminmutelist = body;
-    socket.emit('muteadminevent',{value, socketid, oldroom, room, listMute,adminmutelist});}
+    if (body === socketid) 
+      console.log('can t mute yourself');
+    else
+      socket.emit('muteadminevent',{value, socketid, oldroom, room, listMute,adminmutelist});
+  }
 
     const changePw = () => {
       let socketid = socket.id;
