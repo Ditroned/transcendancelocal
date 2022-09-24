@@ -23,6 +23,43 @@ type UserPayload = {
 };
 
 
+let listRoom : Array<roomType> = [];
+
+type roomType = {
+  roomName : string;
+  owner : string;
+  admin : Set<string>;
+  password : string;
+  userSet : Set<string>;
+  mutedMap : Map<string,number>;
+  banMap : Map<string,number>;
+};
+
+function addRoomToList(roomObject : roomType, listRoom : Array<roomType>) : void {
+  listRoom.push(roomObject);
+}
+
+addRoomToList(
+  {
+  roomName : 'joinroom', 
+  owner : '', 
+  admin : new Set<string>, 
+  password : '', 
+  userSet : new Set<string>().add('jeanvaljean'), 
+  mutedMap : new Map<string,number>().set('leconnard', 300), 
+  banMap : new Map<string,number>
+  },
+  listRoom
+  );
+
+function getLaRoom(name :string, mylist : Array<roomType>) : roomType
+{
+  return (mylist.find(room => (room.roomName === name)));
+}
+
+console.log(getLaRoom('joinroom', listRoom).userSet.size);
+
+
 function leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid,socket,server,listRoom,listUserr){
             
             roomowner.get(room) === socketid ? roomowner.delete(room) : null

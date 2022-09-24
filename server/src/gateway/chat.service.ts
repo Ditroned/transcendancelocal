@@ -3,10 +3,21 @@ import { Server, Socket } from 'socket.io';
 //import { AuthService } from 'src/auth/auth.service';
 //import { UserDto } from 'src/models/users/dto/user.dto';
 
+type roomType = {
+  roomName : string;
+  owner : string;
+  admin : Set<string>;
+  password : string;
+  userSet : Set<string>;
+  mutedMap : Map<string,number>;
+  banMap : Map<string,number>;
+};
+
+let listRoom : Array<roomType> = [];
+
 @Injectable()
 export class ChatService {
-    
-    
+
     constructor(
         /*
         private authService: AuthService,
@@ -16,28 +27,11 @@ export class ChatService {
         private dataSource: DataSource,
         */
         
-      ) {
-        //new object all room
-        //new object 1room
+      ) {}
+
+      async addRoomToList(roomObject : roomType, listRoom : Array<roomType>) : Promise<void> {
+        listRoom.push(roomObject);
       }
-
-      class room: {
-        private name : string;
-        public constructor(name:string) {
-            this.name = name;
-        }
-    }
-
-      //public object all room;
-      //public object room
-
-    async myFunction(client: Socket, pwinput: String) {
-        //const currentUser: UserDto | null = await this.authService.getUserFromSocket(client);     
-
-        //if (1room.pw == pwinput)
-        //  1room.userlist.push(client);
-    }
-
 
 
 }
