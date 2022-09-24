@@ -32,6 +32,4 @@ export class ChatService {
       async addRoomToList(roomObject : roomType, listRoom : Array<roomType>) : Promise<void> {
         listRoom.push(roomObject);
       }
-
-
 }
