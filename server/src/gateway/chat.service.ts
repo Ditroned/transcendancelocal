@@ -29,7 +29,50 @@ export class ChatService {
         
       ) {}
 
-      async addRoomToList(roomObject : roomType, listRoom : Array<roomType>) : Promise<void> {
-        listRoom.push(roomObject);
+      // UTILS    
+    addRoomToList(roomObject : roomType, listRoom : Array<roomType>)
+    {
+      listRoom.push(roomObject);
+    }
+
+    getLaRoom(name :string, mylist : Array<roomType>)
+    {
+      return (mylist.find(room => (room.roomName === name)));
+    }
+
+    async leaveRoomEraseSocket(room,roomowner,roomadmin,roompassword,maproom,socketid,socket,server,listRoom,listUserr){
+            
+      roomowner.get(room) === socketid ? roomowner.delete(room) : null
+      maproom.has(room) ? (maproom.get(room).forEach(elem => { if (elem === socketid) {maproom.get(room).delete(socketid);}})) : null;
+      maproom.has(room) ? (maproom.get(room).size > 0 ? null : (maproom.delete(room),roompassword.delete(room),roomadmin.delete(room))) : null;
+      for (var i = 0; i < listRoom.length + 5;i++) 
+      {
+        listRoom.pop()
       }
+
+      for (let key of maproom.keys()) 
+      {
+        listRoom.lastIndexOf(key) === -1 ? listRoom.push(key) : null;
+      }
+
+      server.to(socketid).emit('roomMove',{
+        listUser : listUserr,
+        roomlist : listRoom,
+        roompassworda : roompassword,
+        roomowner : roomowner,
+        oldroom : room,
+        mynewroom : 'joinroomname',
+      });
+
+      server.emit('connected',{
+        listUser : listUserr,
+        roomlist : listRoom,
+        roompassword : roompassword,
+        roomowner : roomowner
+      });
+
+}
+
+
+
 }
